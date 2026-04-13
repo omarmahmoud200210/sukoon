@@ -1,0 +1,14 @@
+import express from "express";
+import SubTasksController from "./subtasks.controller.js";
+import SubTaskRepository from "./subtasks.repository.js";
+import SubTaskService from "./subtasks.service.js";
+import tryCatch from "../../../shared/utils/tryCatch.utils.js";
+const subTaskRouter = express.Router();
+const subTaskRepository = new SubTaskRepository();
+const subTaskService = new SubTaskService(subTaskRepository);
+const subTasksController = new SubTasksController(subTaskService);
+subTaskRouter.get("/", tryCatch(subTasksController.getAll));
+subTaskRouter.post("/", tryCatch(subTasksController.create));
+subTaskRouter.put("/:taskId/:subTaskId", tryCatch(subTasksController.update));
+subTaskRouter.delete("/:taskId/:subTaskId", tryCatch(subTasksController.delete));
+export default subTaskRouter;

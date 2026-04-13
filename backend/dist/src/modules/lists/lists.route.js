@@ -1,0 +1,17 @@
+import express from "express";
+import ListsController from "./lists.controller.js";
+import ListRepository from "./lists.repository.js";
+import ListService from "./lists.service.js";
+import tryCatch from "../../shared/utils/tryCatch.utils.js";
+import validation from "../../shared/middleware/validation.js";
+import { createListSchema, updateListSchema } from "./lists.schema.js";
+const listsRouter = express.Router();
+const listRepository = new ListRepository();
+const listService = new ListService(listRepository);
+const listsController = new ListsController(listService);
+listsRouter.get("/", tryCatch(listsController.getAll));
+listsRouter.get("/:id", tryCatch(listsController.getById));
+listsRouter.post("/", validation(createListSchema), tryCatch(listsController.create));
+listsRouter.patch("/:id", validation(updateListSchema), tryCatch(listsController.update));
+listsRouter.delete("/:id", tryCatch(listsController.delete));
+export default listsRouter;

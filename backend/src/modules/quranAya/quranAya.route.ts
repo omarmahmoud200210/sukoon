@@ -1,0 +1,14 @@
+import { Router } from "express";
+import QuranAyaRepository from "./quranAya.repo.js";
+import QuranAyaService from "./quranAya.service.js";
+import QuranAyaController from "./quranAya.controller.js";
+
+const quranAyaRouter = Router();
+
+const quranAyaRepo = new QuranAyaRepository();
+const quranAyaService = new QuranAyaService(quranAyaRepo);
+const quranAyaController = new QuranAyaController(quranAyaService);
+
+quranAyaRouter.get("/today", quranAyaController.getTodayQuranAya);
+
+export default quranAyaRouter;

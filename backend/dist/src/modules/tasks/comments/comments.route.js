@@ -1,0 +1,17 @@
+import express from "express";
+import CommentsController from "./comments.controller.js";
+import CommentRepository from "./comments.repository.js";
+import CommentService from "./comments.service.js";
+import tryCatch from "../../../shared/utils/tryCatch.utils.js";
+import validation from "../../../shared/middleware/validation.js";
+import { createCommentSchema, updateCommentSchema } from "./comments.schema.js";
+const commentsRouter = express.Router({ mergeParams: true });
+const commentRepository = new CommentRepository();
+const commentService = new CommentService(commentRepository);
+const commentsController = new CommentsController(commentService);
+commentsRouter.get("/", tryCatch(commentsController.getAll));
+commentsRouter.get("/:id", tryCatch(commentsController.getById));
+commentsRouter.post("/", validation(createCommentSchema), tryCatch(commentsController.create));
+commentsRouter.patch("/:id", validation(updateCommentSchema), tryCatch(commentsController.update));
+commentsRouter.delete("/:id", tryCatch(commentsController.delete));
+export default commentsRouter;

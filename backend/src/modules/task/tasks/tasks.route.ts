@@ -1,0 +1,86 @@
+import express from "express";
+import TasksController from "./tasks.controller.js";
+import TaskService from "./tasks.service.js";
+import TaskRepository from "./tasks.repository.js";
+import validation from "../../../shared/middleware/validation.js";
+import subTasksRouter from "../subtasks/subtasks.route.js";
+import commentsRouter from "../comments/comments.route.js";
+import tryCatch from "../../../shared/utils/tryCatch.utils.js";
+import {
+  getAllTasksSchema,
+  taskIdSchema,
+  newTaskSchema,
+  updateTaskSchema,
+} from "./tasks.schema.js";
+
+const taskRepository = new TaskRepository();
+const taskService = new TaskService(taskRepository);
+const tasksController = new TasksController(taskService);
+const TasksRouter = express.Router();
+
+TasksRouter.use("/:taskId/subTasks", subTasksRouter);
+TasksRouter.use("/:taskId/comments", commentsRouter);
+
+// tasks.route.ts
+TasksRouter.get(
+  "/",
+  validation(getAllTasksSchema),
+  tryCatch(tasksController.getAll),
+);
+TasksRouter.get(
+  "/today",
+  tryCatch(tasksController.getTodayTasks),
+);
+
+TasksRouter.get(
+  "/upcoming",
+  tryCatch(tasksController.getUpcomingTasks),
+);
+
+TasksRouter.get(
+  "/overdue",
+  tryCatch(tasksController.getOverdueTasks),
+);
+
+TasksRouter.get(
+  "/trash",
+  tryCatch(tasksController.getAllTrash),
+);
+
+TasksRouter.get(
+  "/:id",
+  validation(taskIdSchema),
+  tryCatch(tasksController.getById),
+);
+
+TasksRouter.post(
+  "/",
+  validation(newTaskSchema),
+  tryCatch(tasksController.create),
+);
+
+TasksRouter.put(
+  "/:id",
+  validation(updateTaskSchema),
+  tryCatch(tasksController.update),
+);
+
+TasksRouter.delete(
+  "/:id",
+  validation(taskIdSchema),
+  tryCatch(tasksController.delete),
+);
+
+TasksRouter.delete(
+  "/trash/:id",
+  validation(taskIdSchema),
+  tryCatch(tasksController.deleteTrash),
+);
+
+TasksRouter.post(
+  "/trash/:id/restore",
+  validation(taskIdSchema),
+  tryCatch(tasksController.restore),
+);
+
+export default TasksRouter;

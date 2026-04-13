@@ -1,0 +1,14 @@
+import { Router } from "express";
+import PersonalizedAyaController from "./personalizedAya.controller.js"
+import PersonalizedAyaService from "./personalizedAya.service.js";
+import PersonalizedAyaRepo from "./personalizedAya.repo.js";
+
+const PersonalizedAyaRouter = Router();
+
+const personalizedAyaRepo = new PersonalizedAyaRepo();
+const personalizedAyaService = new PersonalizedAyaService(personalizedAyaRepo);
+const personalizedAyaController = new PersonalizedAyaController(personalizedAyaService);
+
+PersonalizedAyaRouter.get("/today", personalizedAyaController.getPersonalizedQuranAya);
+
+export default PersonalizedAyaRouter;

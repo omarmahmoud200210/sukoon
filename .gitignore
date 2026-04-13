@@ -1,10 +1,10 @@
-# Ignore everything by default
-*
+# Ignore everything by default in the root
+/*
 
-# Un-ignore the backend and frontend directories
-!backend/
-!frontend/
+# Un-ignore the backend and frontend directories and their contents
+!/backend/
+!/frontend/
 
-# Un-ignore the .gitignore file itself
+# Un-ignore specific root files
 !.gitignore
 !README.md

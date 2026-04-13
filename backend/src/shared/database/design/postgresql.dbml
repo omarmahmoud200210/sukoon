@@ -1,0 +1,94 @@
+Table users {
+    id int [pk, increment]
+    first_name varchar
+    last_name varchar
+    email varchar
+    password_hash varchar
+    avatar_url varchar
+    is_verified boolean
+    created_at timestamp
+}
+
+Table lists {
+    id int [pk, increment]
+    title varchar
+    color varchar
+    user_id int
+    created_at timestamp
+}
+
+Table tasks {
+  id int [pk, increment]
+  title varchar
+  user_id int
+  list_id int
+  created_at timestamp
+  priority varchar
+  is_completed boolean
+  due_date timestamp
+}
+
+Table tags {
+    id int [pk, increment]
+    name varchar
+    user_id int
+}
+
+Table subTasks {
+    id int [pk, increment]
+    title varchar
+    is_completed boolean
+    task_id int
+}
+
+Table comments {
+    id int [pk, increment]
+    content varchar
+    user_id int
+    task_id int
+}
+
+// Join Table for Many-to-Many (Tasks <-> Tags)
+Table task_tags {
+  task_id int
+  tag_id int
+}
+
+Table pomodoroTasks {
+    id int [pk, increment]
+    title varchar
+    user_id int
+    created_at timestamp
+    duration int
+}
+
+Table pomodoroSessions {
+    id int [pk, increment]
+    user_id int
+    task_id int // Optional: If tracking a Real Task
+    pomodoro_task_id int // Optional: If tracking a Quick Task
+    started_at timestamp
+    ended_at timestamp
+    duration int
+}
+
+// Relations
+Ref: users.id < lists.user_id 
+Ref: users.id < tasks.user_id 
+Ref: lists.id < tasks.list_id 
+Ref: users.id < tags.user_id 
+
+Ref: tasks.id < subTasks.task_id 
+Ref: tasks.id < comments.task_id 
+
+// Many-to-Many
+Ref: tasks.id < task_tags.task_id
+Ref: tags.id < task_tags.tag_id
+
+// Pomodoro Relations
+Ref: users.id < pomodoroTasks.user_id
+Ref: users.id < pomodoroSessions.user_id
+Ref: tasks.id < pomodoroSessions.task_id
+Ref: pomodoroTasks.id < pomodoroSessions.pomodoro_task_id
+
+

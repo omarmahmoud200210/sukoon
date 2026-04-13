@@ -1,0 +1,11 @@
+import TrashController from "./trash.controller.js";
+import TrashService from "./trash.service.js";
+import TrashRepository from "./trash.repository.js";
+import express from "express";
+const trashRouter = express.Router();
+const trashService = new TrashService(new TrashRepository());
+const trashController = new TrashController(trashService);
+trashRouter.get("/", trashController.getAllTasksFromTrash);
+trashRouter.delete("/:taskId", trashController.deleteTaskFromTrash);
+trashRouter.post("/:taskId", trashController.undoTaskFromTrash);
+export default trashRouter;

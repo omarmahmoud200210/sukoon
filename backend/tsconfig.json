@@ -1,0 +1,39 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": ".",
+    "outDir": "./dist",
+    "module": "nodenext",
+    "target": "esnext",
+    "moduleResolution": "nodenext",
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "esModuleInterop": true,
+    "noEmitOnError": false,
+
+    // Recommended Options
+    "noImplicitAny": true, // No implicit any
+    "strictNullChecks": true, // Catch null/undefined bugs
+    "strictFunctionTypes": true, // Function type checking
+    "noUnusedLocals": true, // Catch unused variables
+    "noUnusedParameters": true, // Catch unused params
+    "noImplicitReturns": true, // All code paths return
+    "noFallthroughCasesInSwitch": true, // Switch statement safety
+    "forceConsistentCasingInFileNames": true, //
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  },
+  "ts-node": {
+    "files": true,
+    "esm": true
+  },
+  "include": ["src/**/*", "vitest.config.ts"],
+  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.spec.ts"]
+}

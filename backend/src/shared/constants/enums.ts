@@ -1,0 +1,16 @@
+export { Priority } from "@prisma/client";
+
+export enum UserRole {
+  USER = "USER",
+  ADMIN = "ADMIN",
+  MODERATOR = "MODERATOR",
+}
+
+export enum AuthErrorCode {
+  INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
+  TOKEN_EXPIRED = "TOKEN_EXPIRED",
+  TOKEN_INVALID = "TOKEN_INVALID",
+  EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS",
+}

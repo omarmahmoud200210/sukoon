@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  font-family: var(--font-body);
+  color: var(--color-on-surface);
+  background-color: var(--color-background);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+@utility label-sm {
+  font-size: 0.625rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-on-surface-variant);
+}
+
+@utility bg-glow {
+  background: radial-gradient(
+    circle at 50% -20%,
+    color-mix(in srgb, var(--color-primary) 10%, transparent) 0%,
+    var(--color-background) 70%
+  );
+}
+@utility mockup-perspective {
+  perspective: 2000px;
+}
+@utility mockup-rotate {
+  transform: rotateX(15deg) rotateY(-15deg) rotateZ(5deg);
+  box-shadow: 
+    -20px 40px 80px color-mix(in srgb, var(--color-on-surface) 10%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+@utility glass-card {
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--color-on-surface) 5%, transparent);
+}
+
+@utility glass-nav {
+  background: color-mix(in srgb, var(--color-background) 80%, transparent);
+  backdrop-filter: blur(20px);
+}
+
+@utility editorial-shadow {
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--color-on-surface) 4%, transparent);
+}
+
+@theme {
+  /* Sukoon Design System Colors */
+  --color-primary: #585f3f;
+  --color-primary-container: #717856;
+  --color-primary-fixed: #dfe6bd;
+  --color-secondary: #5d6146;
+  --color-secondary-container: #dfe2c1;
+  --color-tertiary: #70573f;
+  --color-tertiary-container: #8a7056;
+  --color-background: #faf9f6;
+  --color-surface: #faf9f6;
+  --color-surface-bright: #faf9f6;
+  --color-surface-dim: #dbdad7;
+  --color-surface-container: #efeeeb;
+  --color-surface-container-low: #f4f3f1;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e9e8e5;
+  --color-surface-container-highest: #e3e2e0;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #f5f2ed;
+  --color-on-secondary: #ffffff;
+  --color-on-surface: #1a1c1a;
+  --color-on-surface-variant: #46483e;
+  --color-outline: #77786d;
+  --color-outline-variant: #c7c7bb;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+
+  /* Custom font family */
+  --font-display: "Plus Jakarta Sans", "Amiri", serif;
+  --font-body: "Plus Jakarta Sans", "IBM Plex Sans Arabic", sans-serif;
+  --font-headline: "Plus Jakarta Sans", "IBM Plex Sans Arabic", sans-serif;
+  --font-label: "Plus Jakarta Sans", "IBM Plex Sans Arabic", sans-serif;
+
+  /* Custom border-radius */
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-DEFAULT: 0.5rem;
+  
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #faf9f6;
+  --foreground: #1a1c1a;
+  --card: #ffffff;
+  --card-foreground: #1a1c1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1c1a;
+  --primary: #585f3f;
+  --primary-foreground: #ffffff;
+  --secondary: #5d6146;
+  --secondary-foreground: #ffffff;
+  --muted: #f4f3f1;
+  --muted-foreground: #46483e;
+  --accent: #efeeeb;
+  --accent-foreground: #1a1c1a;
+  --destructive: #ba1a1a;
+  --border: #c7c7bb;
+  --input: #efeeeb;
+  --ring: #585f3f;
+
+  --sidebar: #f4f3f1;
+  --sidebar-foreground: #1a1c1a;
+  --sidebar-primary: #585f3f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #efeeeb;
+  --sidebar-accent-foreground: #1a1c1a;
+  --sidebar-border: transparent;
+  --sidebar-ring: #585f3f;
+}
+
+/* ─── Sukoon Dark Mode ─── */
+/* "A sanctuary at dusk" — warm charcoals, softened sage, gentle contrast */
+.dark {
+  /* Sukoon design system overrides */
+  --color-primary: #b8c098;
+  --color-primary-container: #3d4228;
+  --color-primary-fixed: #3d4228;
+  --color-secondary: #c0c4a6;
+  --color-secondary-container: #3e4230;
+  --color-tertiary: #d4b89c;
+  --color-tertiary-container: #4a3828;
+  --color-background: #121411;
+  --color-surface: #121411;
+  --color-surface-bright: #383a36;
+  --color-surface-dim: #121411;
+  --color-surface-container: #1e201c;
+  --color-surface-container-low: #1a1c18;
+  --color-surface-container-lowest: #0d0f0b;
+  --color-surface-container-high: #282a26;
+  --color-surface-container-highest: #333531;
+  --color-on-primary: #1a1c1a;
+  --color-on-primary-container: #dfe6bd;
+  --color-on-secondary: #1a1c1a;
+  --color-on-surface: #e3e2de;
+  --color-on-surface-variant: #c7c7bb;
+  --color-outline: #919286;
+  --color-outline-variant: #46483e;
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+
+  /* shadcn variable overrides (aligned with Sukoon dark tokens) */
+  --background: #121411;
+  --foreground: #e3e2de;
+  --card: #1e201c;
+  --card-foreground: #e3e2de;
+  --popover: #1e201c;
+  --popover-foreground: #e3e2de;
+  --primary: #b8c098;
+  --primary-foreground: #1a1c1a;
+  --secondary: #c0c4a6;
+  --secondary-foreground: #1a1c1a;
+  --muted: #1e201c;
+  --muted-foreground: #c7c7bb;
+  --accent: #282a26;
+  --accent-foreground: #e3e2de;
+  --destructive: #ffb4ab;
+  --border: rgba(199, 199, 187, 0.15);
+  --input: #1e201c;
+  --ring: #b8c098;
+
+  --sidebar: #1a1c18;
+  --sidebar-foreground: #e3e2de;
+  --sidebar-primary: #b8c098;
+  --sidebar-primary-foreground: #1a1c1a;
+  --sidebar-accent: #282a26;
+  --sidebar-accent-foreground: #e3e2de;
+  --sidebar-border: transparent;
+  --sidebar-ring: #b8c098;
+}
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-container);
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
+
+.task-item:hover .task-actions {
+  opacity: 1;
+}
+
+.rdp-custom {
+  --rdp-accent-color: var(--color-primary);
+  --rdp-accent-background-color: rgba(88, 95, 63, 0.15);
+  --rdp-day-width: 28px;
+  --rdp-day-height: 28px;
+  font-size: 11px;
+}
+
+.rdp-custom .rdp-month_caption {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 0 6px;
+}
+
+.rdp-custom .rdp-button_previous,
+.rdp-custom .rdp-button_next {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rdp-custom .rdp-day button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 11px;
+}
