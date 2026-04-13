@@ -7,8 +7,6 @@ class SubTaskRepository {
     title: true,
     isCompleted: true,
     taskId: true,
-    createdAt: true,
-    updatedAt: true,
   };
 
   constructor() {}
