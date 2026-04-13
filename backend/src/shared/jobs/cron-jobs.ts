@@ -40,7 +40,7 @@ export function quranAyaCronJob() {
   logger.info("[CRON] Cron jobs initialized - Midnight quran aya enabled");
 
   cron.schedule(
-    "* * * * *",
+    "0 0 * * *",
     async () => {
       logger.info("[CRON] Running Quran aya job...");
       try {
