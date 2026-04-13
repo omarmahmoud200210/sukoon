@@ -44,7 +44,7 @@ export class App {
     this.app.use(cookieParser());
     this.app.use(
       cors({
-        origin: "https://localhost:5173",
+        origin: process.env.FRONTEND_URL,
         credentials: true,
       }),
     );
