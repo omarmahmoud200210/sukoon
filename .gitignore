@@ -1,0 +1,9 @@
+# Ignore everything by default
+*
+
+# Un-ignore the backend and frontend directories
+!backend/
+!frontend/
+
+# Un-ignore the .gitignore file itself
+!.gitignore
