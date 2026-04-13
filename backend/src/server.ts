@@ -1,7 +1,5 @@
 import "./shared/utils/instrument.js";
 import App from "./app.js";
-import https from "https";
-import fs from "fs";
 import logger from "./shared/utils/logger.js";
 
 const PORT = process.env.PORT || 3000;
@@ -9,13 +7,8 @@ const PORT = process.env.PORT || 3000;
 try {
   const server = new App();
 
-  const httpsOptions = {
-    key: fs.readFileSync("server.key"),
-    cert: fs.readFileSync("server.crt"),
-  };
-
-  https.createServer(httpsOptions, server.app).listen(PORT, () => {
-    logger.info(`HTTPS Server is running on https://localhost:${PORT}`);
+  server.app.listen(PORT, () => {
+    logger.info(`HTTP Server is running on http://localhost:${PORT}`);
   });
 } catch (error) {
   console.error("Server initialization error:", error);
