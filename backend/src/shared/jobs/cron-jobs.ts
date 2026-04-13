@@ -61,15 +61,15 @@ export function quranAyaCronJob() {
   logger.info("[CRON] Cron jobs initialized - Midnight quote enabled");
 }
 
-export async function personalizedQuranAyaCronJob() {
+export function personalizedQuranAyaCronJob() {
   const authRepo = new AuthRepository();
-  const users = await authRepo.getAllUsers();
   const personalizedAyaRepo = new PersonalizedAyaRepo();
   const personalizedAyaService = new PersonalizedAyaService(personalizedAyaRepo);
 
   cron.schedule("0 0 * * *", async () => {
     logger.info("[CRON] Running personalized Quran Aya job...");
     try {
+      const users = await authRepo.getAllUsers();
       for (const user of users) {
         try {
           await personalizedAyaService.personalizedAyaWithAI(user.id);
@@ -85,4 +85,6 @@ export async function personalizedQuranAyaCronJob() {
   }, {
     timezone: "Africa/Cairo",
   })
+
+  logger.info("[CRON] Cron jobs initialized - Midnight personalized quran aya enabled");
 }

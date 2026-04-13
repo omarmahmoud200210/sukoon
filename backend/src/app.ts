@@ -105,15 +105,7 @@ export class App {
   initializeCronJobs() {
     splittingSessionsCronJob();
     quranAyaCronJob();
-
-    // Defer async cron job to next tick to avoid blocking startup
-    setTimeout(() => {
-      personalizedQuranAyaCronJob().catch((err) => {
-        logger.error("[CRON] Failed to initialize personalized Quran Aya job", {
-          error: err,
-        });
-      });
-    }, 0);
+    personalizedQuranAyaCronJob();
   }
 }
 
