@@ -30,7 +30,14 @@ class AuthenticationController {
   };
 
   register: RequestHandler = async (req, res) => {
-    const data = await this.authServices.register(req.body);
+    const userData = {
+      email: req.body.email,
+      password: req.body.password,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+    }
+    
+    const data = await this.authServices.register(userData);
 
     if (data) return res.status(200).json(data);
     throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
