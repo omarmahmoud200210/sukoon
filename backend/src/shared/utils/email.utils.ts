@@ -8,10 +8,10 @@ interface EmailOptions {
   html?: string;
 }
 
-const sendEmail = async (options: EmailOptions) => {
+const sendEmail = async (userEmail: string, token: string) => {
   let transporter;
 
-  if (process.env.GMAIL_EMAIL && process.env.GMAIL_PASSWORD) {
+  if (process.env.NODE_ENV === "production") {
     transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -30,15 +30,15 @@ const sendEmail = async (options: EmailOptions) => {
     });
   }
 
-  const senderEmail = process.env.GMAIL_EMAIL || "no-reply@momentum.com";
+  const mailOptions = {
+    from: "omar.mahmoud200210@gmail.com",
+    to: userEmail,
+    subject: "Test Email",
+    text: "This is a test email",
+    html: `<h1>This is a test email</h1><a href="${process.env.FRONTEND_URL}/verify-email?token=${token}">Verify Email</a>`,
+  };
 
-  const info = await transporter.sendMail({
-    from: `"Sukoon Productivity App" <${senderEmail}>`,
-    to: options.to,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
-  });
+  const info = await transporter.sendMail(mailOptions);
 
   logger.info(`Message sent: ${info.messageId}`);
 };
