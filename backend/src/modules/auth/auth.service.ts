@@ -12,6 +12,7 @@ import { AppError } from "../../shared/middleware/error.js";
 import AuthRepository from "./auth.repositorty.js";
 import { AuthErrorCode } from "../../shared/constants/enums.js";
 import uploadImage from "../../shared/utils/upload.utils.js";
+import logger from "../../shared/utils/logger.js";
 
 class AuthenticationServices {
   constructor(private readonly authRepository: AuthRepository) {}
@@ -78,6 +79,7 @@ class AuthenticationServices {
     try {
       await sendEmail(userData.email, verifyEmailToken);
     } catch (error) {
+      logger.error(error);
       await this.authRepository.deleteAccount(newUser.id);
       throw new Error(
         "Failed to send verification email. Please check your email configuration and try again.",
