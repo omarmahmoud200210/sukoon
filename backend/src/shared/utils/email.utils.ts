@@ -29,6 +29,7 @@ const sendEmail = async (options: EmailOptions) => {
 
     logger.info(`Message sent: ${info.messageId}`);
   } else {
+    
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
