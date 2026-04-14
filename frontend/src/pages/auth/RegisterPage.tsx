@@ -60,10 +60,16 @@ export default function RegisterPage() {
       toast.success(t('auth.account_created'));
       navigate("/login");
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 429) {
-        toast.error(t('auth.rate_limit'));
-        setRateLimiting(true);
-        setTimeout(() => setRateLimiting(false), 60000);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          toast.error(t('auth.rate_limit'));
+          setRateLimiting(true);
+          setTimeout(() => setRateLimiting(false), 60000);
+        } else if (error.response?.status === 401) {
+          toast.error(t('auth.user_already_exists', 'This email is already registered. Please login instead.'));
+        } else {
+          toast.error(t('auth.error'));
+        }
       } else {
         toast.error(t('auth.error'));
       }

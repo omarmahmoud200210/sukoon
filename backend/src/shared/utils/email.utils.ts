@@ -46,7 +46,7 @@ const sendEmail = async (options: EmailOptions) => {
       html: options.html,
     });
 
-    logger.info(`Message sent: ${info.messageId}`);
+    logger.error(`Message sent: ${info.messageId}`);
   }
 };
 
