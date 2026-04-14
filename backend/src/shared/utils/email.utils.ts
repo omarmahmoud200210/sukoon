@@ -1,13 +1,6 @@
 import nodemailer from "nodemailer";
 import logger from "./logger.js";
 
-interface EmailOptions {
-  to: string;
-  subject: string;
-  text?: string;
-  html?: string;
-}
-
 const sendEmail = async (userEmail: string, token: string) => {
   let transporter;
 
