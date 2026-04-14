@@ -19,12 +19,12 @@ export default function VerifyPage() {
 
     verifyUser(token)
       .then(() => {
-        toast.success(t("auth.email_verified"));
+        toast.success(t("common.email_verified"));
         searchParams.delete("token");
         setSearchParams(searchParams);
       })
       .catch(() => {
-        toast.error(t("auth.verification_failed"));
+        toast.error(t("common.verification_failed"));
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);

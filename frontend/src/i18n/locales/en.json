@@ -172,7 +172,7 @@
     "already_have_account": "Already have an account?",
     "sign_in": "Sign in",
     "passwords_dont_match": "Passwords do not match",
-    "account_created": "Account created successfully!",
+    "account_created": "You're registered but not verified yet. Please check your email to verify it.",
     "forgot_title": "Forgot password?",
     "forgot_desc": "No worries, we'll send you reset instructions.",
     "reset_password_btn": "Reset password",

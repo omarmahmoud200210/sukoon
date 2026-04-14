@@ -36,9 +36,8 @@ class AuthenticationController {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
     }
-    
-    const data = await this.authServices.register(userData);
 
+    const data = await this.authServices.register(userData);
     if (data) return res.status(200).json(data);
     throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
   };
