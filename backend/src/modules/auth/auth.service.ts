@@ -75,22 +75,22 @@ class AuthenticationServices {
 
     const verifyEmailToken = generateVerificationToken(newUser.id);
 
-    try {
-      await sendEmail({
-        to: userData.email,
-        subject: "Verify Email",
-        text: `Verify your email by clicking this link: ${process.env.FRONTEND_URL}/verify-email?token=${verifyEmailToken}`,
-        html: `
-          <h1>Verify Email</h1>
-          <p>Verify your email by clicking this link: <a href="${process.env.FRONTEND_URL}/verify-email?token=${verifyEmailToken}">Verify Email</a></p>
-        `,
-      });
-    } catch (error) {
-      await this.authRepository.deleteAccount(newUser.id);
-      throw new Error(
-        "Failed to send verification email. Please check your email configuration and try again.",
-      );
-    }
+    // try {
+    //   await sendEmail({
+    //     to: userData.email,
+    //     subject: "Verify Email",
+    //     text: `Verify your email by clicking this link: ${process.env.FRONTEND_URL}/verify-email?token=${verifyEmailToken}`,
+    //     html: `
+    //       <h1>Verify Email</h1>
+    //       <p>Verify your email by clicking this link: <a href="${process.env.FRONTEND_URL}/verify-email?token=${verifyEmailToken}">Verify Email</a></p>
+    //     `,
+    //   });
+    // } catch (error) {
+    //   await this.authRepository.deleteAccount(newUser.id);
+    //   throw new Error(
+    //     "Failed to send verification email. Please check your email configuration and try again.",
+    //   );
+    // }
 
     return {
       email: newUser.email,
