@@ -1,4 +1,4 @@
-import type { RequestHandler } from "express";
+import type { CookieOptions, RequestHandler } from "express";
 import AuthenticationServices from "./auth.service.js";
 import setCookies from "../../shared/utils/cookies.utils.js";
 import jwt from "jsonwebtoken";
@@ -11,13 +11,15 @@ class AuthenticationController {
 
   login: RequestHandler = async (req, res) => {
     const { email, password, rememberMe } = req.body;
-    const userLogin = await this.authServices.login(
-      email,
-      password,
-    );
+    const userLogin = await this.authServices.login(email, password);
 
     if (userLogin.status) {
-      setCookies(res, userLogin.tokens?.accessToken!, userLogin.tokens?.refreshToken!, rememberMe);
+      setCookies(
+        res,
+        userLogin.tokens?.accessToken!,
+        userLogin.tokens?.refreshToken!,
+        rememberMe,
+      );
       return res.status(200).json(userLogin.user);
     }
 
@@ -35,7 +37,7 @@ class AuthenticationController {
       password: req.body.password,
       firstName: req.body.firstName,
       lastName: req.body.lastName,
-    }
+    };
 
     const data = await this.authServices.register(userData);
     if (data) return res.status(200).json(data);
@@ -43,8 +45,13 @@ class AuthenticationController {
   };
 
   logout: RequestHandler = (_req, res) => {
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    } as CookieOptions;
+    res.clearCookie("access_token", cookieOptions);
+    res.clearCookie("refresh_token", cookieOptions);
     return res.status(200).json({ message: "Logged out successfully" });
   };
 
@@ -112,31 +119,41 @@ class AuthenticationController {
 
   changeFirstNameAndLastName: RequestHandler = async (req, res) => {
     const { firstName, lastName } = req.body;
-    const message = await this.authServices.changeFirstNameAndLastName(req.user!.id, firstName, lastName);
+    const message = await this.authServices.changeFirstNameAndLastName(
+      req.user!.id,
+      firstName,
+      lastName,
+    );
     if (message) return res.status(200).json(message);
     throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
-  }
+  };
 
   changePassword: RequestHandler = async (req, res) => {
     const { password } = req.body;
-    const message = await this.authServices.changePassword(req.user!.id, password);
+    const message = await this.authServices.changePassword(
+      req.user!.id,
+      password,
+    );
     if (message) return res.status(200).json(message);
     throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
-  }
+  };
 
   deleteAccount: RequestHandler = async (req, res) => {
     const message = await this.authServices.deleteAccount(req.user!.id);
     if (message) return res.status(200).json(message);
     throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
-  }
+  };
 
   uploadAvatar: RequestHandler = async (req, res) => {
     const file = req.file;
     if (!file) throw AppError.BadRequest("No file uploaded");
-    const message = await this.authServices.uploadAvatar(req.user!.id, file.buffer);
+    const message = await this.authServices.uploadAvatar(
+      req.user!.id,
+      file.buffer,
+    );
     if (message) return res.status(200).json(message);
     throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
-  }
+  };
 }
 
 export default AuthenticationController;

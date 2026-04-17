@@ -19,14 +19,12 @@ export default function setCookies(
     secure: true,
     sameSite: "none",
     maxAge: accessMaxAge,
-    ...({ partitioned: true } as any),
   });
-  
+
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
     maxAge: refreshMaxAge,
-    ...({ partitioned: true } as any),
   });
 }
