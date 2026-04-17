@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "./useAuth";
 import { useTranslation } from "react-i18next";
+import GlobalTimerNotifications from "@/components/features/timer/GlobalTimerNotifications";
 
 export default function ProtectedRoutes() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -20,5 +21,10 @@ export default function ProtectedRoutes() {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  return <Outlet />;
+  return (
+    <>
+      <GlobalTimerNotifications />
+      <Outlet />
+    </>
+  );
 }

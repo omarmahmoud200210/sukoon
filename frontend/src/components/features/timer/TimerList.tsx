@@ -10,7 +10,6 @@ import {
 import useTimerControls from "@/hooks/useTimerControls";
 import CreateDialog from "@/components/CreateDialog";
 import SessionEndDialog from "@/components/SessionEndDialog";
-import useNotifications from "./notifications";
 import { useUIStore } from "@/store/uiStore";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
@@ -60,8 +59,6 @@ export default function TimerList() {
       setPendingSwitchTask(null);
     }
   };
-
-  useNotifications(currentActiveTask, timerControls);
 
   return (
     <div className="flex flex-col h-full gap-8 overflow-hidden">

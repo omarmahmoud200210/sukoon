@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import useTimerControls from "@/hooks/useTimerControls";
 import type { PomodoroTask } from "@/types/timer";
-
 import CustomTimerToast from "./CustomTimerToast";
 
 export default function useNotifications(
