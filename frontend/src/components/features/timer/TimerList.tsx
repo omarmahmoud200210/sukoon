@@ -264,6 +264,7 @@ export default function TimerList() {
         open={switchDialogOpen}
         onOpenChange={setSwitchDialogOpen}
         elapsedSecs={elapsedSecs}
+        sessionMode={timerControls.mode}
         onEndAndSave={() => {
           complete();
           startNewTask();

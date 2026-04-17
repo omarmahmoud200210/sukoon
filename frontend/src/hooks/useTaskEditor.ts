@@ -54,7 +54,7 @@ export function useTaskEditor() {
       if (selectedTask) {
         await updateTaskMutation({ id: selectedTask.id, data: { title } });
       }
-    }, 1500);
+    }, 1000);
   };
 
   const handleDescriptionChangeDebounced = (description: string) => {
@@ -64,7 +64,7 @@ export function useTaskEditor() {
       if (selectedTask) {
         await updateTaskMutation({ id: selectedTask.id, data: { description } });
       }
-    }, 1500);
+    }, 1000);
   };
 
   const deselectTask = () => setSelectedTask(null);

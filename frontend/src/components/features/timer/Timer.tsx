@@ -179,6 +179,7 @@ export default function Timer({
         onEndAndSave={complete}
         onQuit={reset}
         elapsedSecs={elapsedSecs}
+        sessionMode={mode}
       />
     </motion.div>
   );
