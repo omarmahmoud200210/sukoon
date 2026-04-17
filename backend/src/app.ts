@@ -32,6 +32,7 @@ export class App {
 
   constructor() {
     this.app = express();
+    this.app.set("trust proxy", 1);
     dotenv.config();
     this.initializeMiddleware();
     this.initializeRoutes();
@@ -39,15 +40,15 @@ export class App {
   }
 
   initializeMiddleware() {
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(cookieParser());
     this.app.use(
       cors({
         origin: process.env.FRONTEND_URL,
         credentials: true,
       }),
     );
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cookieParser());
     this.app.use(helmet());
     this.app.use(passport.initialize());
     this.app.use(morgan("dev"));
