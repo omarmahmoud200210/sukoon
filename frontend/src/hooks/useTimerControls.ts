@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import TimerWorker from "@/workers/timer.worker.ts?worker";
+import timerWorker from "@/workers/timerWorkerSingleton";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useActivePomodoroSession,
@@ -14,7 +14,6 @@ import { useUIStore } from "@/store/uiStore";
 import setupSuccessNotification from "@/lib/notifications";
 import sound from "@/sound/notification.mp3";
 import logger from "@/lib/logger";
-
 
 export default function useTimerControls() {
   const { data: activeSession, isLoading: isActiveSessionLoading } =
@@ -31,8 +30,8 @@ export default function useTimerControls() {
   const mode = useUIStore((s) => s.mode);
   const setMode = useUIStore((s) => s.setMode);
 
-  const endTimeRef = useRef<number | null>(null);
-  const workerRef = useRef<Worker | null>(null);
+  const endTimestamp = useUIStore((s) => s.endTimestamp);
+  const setEndTimestamp = useUIStore((s) => s.setEndTimestamp);
 
   const prevSessionIdRef = useRef<string | number | undefined>(
     activeSession?.id,
@@ -43,10 +42,8 @@ export default function useTimerControls() {
   const queryClient = useQueryClient();
 
   const onComplete = useCallback(() => {
-    if (workerRef.current) {
-      workerRef.current.terminate();
-      workerRef.current = null;
-    }
+    timerWorker.postMessage({ type: "stop" });
+    setEndTimestamp(null);
 
     setIsActive(false);
     completeSession.mutate();
@@ -93,6 +90,7 @@ export default function useTimerControls() {
     setIsActive,
     setMode,
     setTimeLeft,
+    setEndTimestamp,
   ]);
 
   function triggerSessionCompleteAlert(title: string, body: string) {
@@ -133,7 +131,7 @@ export default function useTimerControls() {
         if (remaining > 0) {
           setTimeLeft(remaining);
           setIsActive(true);
-          endTimeRef.current = endedAt;
+          setEndTimestamp(endedAt);
           setMode("work");
         } else {
           onComplete();
@@ -147,36 +145,26 @@ export default function useTimerControls() {
     setTimeLeft,
     setIsActive,
     setMode,
+    setEndTimestamp,
   ]);
 
   useEffect(() => {
-    if (!isActive || !endTimeRef.current) return;
-
-    const worker = new TimerWorker();
-    workerRef.current = worker;
-
-    worker.onmessage = (e: MessageEvent) => {
+    if (!isActive || !endTimestamp) return;
+    const handleMessage = (e: MessageEvent) => {
       const { type, remaining } = e.data;
-
       if (type === "tick") {
         setTimeLeft(remaining);
       }
-
       if (type === "complete") {
         onComplete();
       }
     };
-
-    worker.postMessage({
-      type: "start",
-      endTimestamp: endTimeRef.current,
-    });
-
+    timerWorker.addEventListener("message", handleMessage);
+    timerWorker.postMessage({ type: "start", endTimestamp });
     return () => {
-      worker.terminate();
-      workerRef.current = null;
+      timerWorker.removeEventListener("message", handleMessage);
     };
-  }, [isActive, mode, sessionCount, onComplete, setTimeLeft]);
+  }, [isActive, endTimestamp, onComplete, setTimeLeft]);
 
   useEffect(() => {
     setupSuccessNotification();
@@ -190,7 +178,7 @@ export default function useTimerControls() {
     setIsActive(true);
 
     const durationInSeconds = durationInMinutes * 60;
-    endTimeRef.current = Date.now() + durationInSeconds * 1000;
+    setEndTimestamp(Date.now() + durationInSeconds * 1000);
     setTimeLeft(durationInSeconds);
     setMode("work");
 
@@ -212,7 +200,7 @@ export default function useTimerControls() {
   const reset = () => {
     setIsActive(false);
     setTimeLeft(0);
-    endTimeRef.current = null;
+    setEndTimestamp(null);
     setMode("work");
 
     if (mode === "work") {
@@ -224,7 +212,7 @@ export default function useTimerControls() {
     if (isActive) return;
 
     setIsActive(true);
-    endTimeRef.current = Date.now() + timeLeft * 1000;
+    setEndTimestamp(Date.now() + timeLeft * 1000);
     if (mode === "work") {
       togglePauseSession.mutate();
     }

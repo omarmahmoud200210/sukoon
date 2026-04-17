@@ -29,6 +29,9 @@ export interface TimerUIStates {
   // Tab
   activeTab: "active" | "archived";
   setActiveTab: (tab: "active" | "archived") => void;
+
+  endTimestamp: number | null;
+  setEndTimestamp: (ts: number | null) => void;
 }
 
 export const createTimerSlice: StateCreator<TimerUIStates> = (set) => ({
@@ -59,4 +62,7 @@ export const createTimerSlice: StateCreator<TimerUIStates> = (set) => ({
   // Tab
   activeTab: "active",
   setActiveTab: (tab: "active" | "archived") => set({ activeTab: tab }),
+
+  endTimestamp: null,
+  setEndTimestamp: (ts: number | null) => set({ endTimestamp: ts }),
 });
