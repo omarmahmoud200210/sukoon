@@ -61,7 +61,7 @@ export default function Timer({
     <motion.div
       layout
       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-      className={`flex items-center justify-between px-8 py-4 rounded-2xl transition-colors duration-300 group ${
+      className={`flex items-center justify-between px-4 py-3 md:px-8 md:py-4 rounded-2xl transition-colors duration-300 group ${
         mode === "work" ? "bg-primary text-on-primary" : "bg-tertiary text-on-tertiary"
       }`}
     >
@@ -89,7 +89,7 @@ export default function Timer({
           )}
         </div>
         <div className="h-4 w-px bg-on-primary/20 shrink-0" />
-        <span className="text-xl font-bold tabular-nums">{displayTime}</span>
+        <span className="text-lg md:text-xl font-bold tabular-nums">{displayTime}</span>
       </div>
 
       <div className="flex items-center gap-3 shrink-0">

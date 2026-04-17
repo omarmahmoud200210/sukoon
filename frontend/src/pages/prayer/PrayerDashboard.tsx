@@ -38,7 +38,7 @@ export default function PrayerDashboard() {
       exit="exit"
       className="flex-1 flex flex-col bg-background min-w-[360px] transition-colors duration-500 overflow-hidden"
     >
-      <div className="flex-1 overflow-hidden pt-8 pr-8 pb-8">
+      <div className="flex-1 overflow-hidden p-4 md:pt-8 md:pr-8 md:pb-8 md:pl-0">
         <div className="max-w-[900px] mx-auto h-full overflow-y-auto scrollbar-thin">
           <div className="flex flex-col gap-6">
             <div>
@@ -75,11 +75,11 @@ export default function PrayerDashboard() {
                   <Skeleton width={160} height={40} borderRadius={12} className="mx-auto" />
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
-                      className="rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 flex flex-col items-center gap-2"
+                      className="rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-2 sm:p-4 flex flex-col items-center gap-1 sm:gap-2"
                     >
                       <Skeleton
                         width={28}
@@ -109,18 +109,18 @@ export default function PrayerDashboard() {
             )}
 
             {!isLoading && nextPrayer && countdown && (
-              <div className="rounded-2xl border border-primary/20 bg-surface-container-lowest p-8 text-center">
-                <p className="text-xs font-semibold uppercase tracking-widest text-secondary/60 mb-2">
+              <div className="rounded-2xl border border-primary/20 bg-surface-container-lowest p-5 md:p-8 text-center">
+                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-secondary/60 mb-2">
                   {t("prayer.nextPrayer")}
                 </p>
-                <h2 className="text-3xl font-black text-primary mb-1">
+                <h2 className="text-2xl md:text-3xl font-black text-primary mb-1">
                   {t(`prayer.timings.${nextPrayer.name.toLowerCase()}`)}
                 </h2>
-                <p className="text-lg font-bold text-on-surface/60 mb-4">
+                <p className="text-base md:text-lg font-bold text-on-surface/60 mb-4">
                   {formatTo12Hour(nextPrayer.time)}
                 </p>
-                <div className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-6 py-3">
-                  <span className="text-2xl font-mono font-black text-primary tabular-nums">
+                <div className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 md:px-6 md:py-3">
+                  <span className="text-xl md:text-2xl font-mono font-black text-primary tabular-nums">
                     {String(countdown.hours).padStart(2, "0")}:
                     {String(countdown.minutes).padStart(2, "0")}:
                     {String(countdown.seconds).padStart(2, "0")}
@@ -141,34 +141,34 @@ export default function PrayerDashboard() {
             )}
 
             {!isLoading && allTimings && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 {PRAYER_ORDER.map(({ key, icon }) => {
                   const isNext = nextPrayer?.name === key;
                   return (
                     <div
                       key={key}
-                      className={`rounded-xl border p-4 flex flex-col items-center gap-2 transition-colors ${
+                      className={`rounded-xl border p-2 sm:p-4 flex flex-col items-center gap-1 sm:gap-2 transition-colors ${
                         isNext
                           ? "border-primary/30 bg-primary/5"
                           : "border-outline-variant/10 bg-surface-container-lowest"
                       }`}
                     >
                       <span
-                        className={`material-symbols-outlined text-2xl ${
+                        className={`material-symbols-outlined text-xl sm:text-2xl ${
                           isNext ? "text-primary" : "text-secondary/40"
                         }`}
                       >
                         {icon}
                       </span>
                       <span
-                        className={`text-xs font-bold uppercase tracking-wider ${
+                        className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
                           isNext ? "text-primary" : "text-secondary/60"
                         }`}
                       >
                         {t(`prayer.timings.${key.toLowerCase()}`)}
                       </span>
                       <span
-                        className={`text-lg font-mono font-bold tabular-nums ${
+                        className={`text-sm sm:text-lg font-mono font-bold tabular-nums ${
                           isNext ? "text-primary" : "text-on-surface"
                         }`}
                       >

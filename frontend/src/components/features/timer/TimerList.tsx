@@ -61,11 +61,11 @@ export default function TimerList() {
   };
 
   return (
-    <div className="flex flex-col h-full gap-8 overflow-hidden">
+    <div className="flex flex-col h-full gap-4 md:gap-8 overflow-hidden">
       <section className="flex flex-col h-full overflow-hidden flex-1">
-        <div className="flex items-center justify-between mb-8 px-1 shrink-0">
-          <div className="flex items-center gap-8">
-            <h1 className="text-2xl font-black tracking-tight text-primary">
+        <div className="flex items-center justify-between mb-4 md:mb-8 px-1 shrink-0">
+          <div className="flex items-center gap-4 md:gap-8">
+            <h1 className="text-xl md:text-2xl font-black tracking-tight text-primary">
               {t("timer.pomodoro")}
             </h1>
             <div className="flex gap-1">

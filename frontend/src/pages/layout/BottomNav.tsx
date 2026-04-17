@@ -42,8 +42,12 @@ export default function BottomNav() {
         </Link>
       ))}
       <div className="flex flex-col items-center justify-center w-16 h-full">
-         <div className="flex items-center justify-center h-8 mb-1">
-            <UserButton />
+         <div className="flex items-center justify-center h-8 mb-2">
+            <UserButton 
+              side="top" 
+              align="center" 
+              className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-sm font-display font-bold shadow-sm cursor-pointer hover:scale-105 transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            />
          </div>
          <span className="text-[10px] font-medium leading-none text-on-surface-variant/40">{t("common.profile") || "Profile"}</span>
       </div>

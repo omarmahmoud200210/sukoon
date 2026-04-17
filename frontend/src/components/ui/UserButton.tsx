@@ -12,7 +12,13 @@ import {
 import { useTranslation } from "react-i18next";
 import SettingsDialog from "@/components/features/settings/SettingsDialog";
 
-export default function UserButton() {
+interface UserButtonProps {
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
+  className?: string;
+}
+
+export default function UserButton({ side = "right", align = "end", className }: UserButtonProps = {}) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -36,7 +42,7 @@ export default function UserButton() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center text-base font-display font-bold shadow-sm cursor-pointer hover:rotate-3 transition-all duration-500 editorial-shadow outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={className || "w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center text-base font-display font-bold shadow-sm cursor-pointer hover:rotate-3 transition-all duration-500 editorial-shadow outline-none focus-visible:ring-2 focus-visible:ring-primary"}
             title={fullName}
           >
             {user?.avatarUrl ? (
@@ -54,7 +60,7 @@ export default function UserButton() {
           </button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" side="right" sideOffset={8} className="w-48">
+        <DropdownMenuContent align={align} side={side} sideOffset={8} className="w-48">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col gap-0.5">
               <p className="text-sm font-medium">{fullName}</p>

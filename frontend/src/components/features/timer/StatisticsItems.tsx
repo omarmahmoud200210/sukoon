@@ -76,12 +76,12 @@ export default function StatisticsItems() {
         {stats.map((stat, index) => (
           <div
             key={index}
-            className="bg-surface-container-lowest border border-outline-variant/10 p-4 rounded-xl flex flex-col justify-between shadow-sm hover:border-primary/20 transition-all"
+            className="bg-surface-container-lowest border border-outline-variant/10 p-3 md:p-4 rounded-xl flex flex-col justify-between shadow-sm hover:border-primary/20 transition-all"
           >
             <span className="text-[9px] font-bold text-secondary/60 uppercase">
               {stat.label}
             </span>
-            <div className="text-xl font-black text-primary mt-1">{stat.value}</div>
+            <div className="text-lg md:text-xl font-black text-primary mt-1">{stat.value}</div>
           </div>
         ))}
       </div>
