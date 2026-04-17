@@ -13,7 +13,7 @@ export default function TafreeghLayout() {
 
   return (
     <div
-      className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-screen overflow-hidden transition-colors duration-500 pb-[68px] md:pb-0"
+      className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-[100dvh] overflow-hidden transition-colors duration-500 pb-[calc(68px+env(safe-area-inset-bottom))] md:pb-0"
       dir={isRtl ? "rtl" : "ltr"}
     >
       <UserPanel />

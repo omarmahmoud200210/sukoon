@@ -13,7 +13,7 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-screen overflow-hidden transition-colors duration-500 pb-[68px] md:pb-0">
+    <div className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-[100dvh] overflow-hidden transition-colors duration-500 pb-[calc(68px+env(safe-area-inset-bottom))] md:pb-0">
       <UserPanel />
 
       <aside className="w-60 shrink-0 flex flex-col pt-8 bg-surface/30 backdrop-blur-sm transition-all duration-300 border-e border-outline-variant/10 hidden md:flex relative">

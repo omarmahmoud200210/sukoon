@@ -31,7 +31,7 @@ export default function VerifyPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-background text-on-surface font-display min-h-screen flex flex-col">
+      <div className="bg-background text-on-surface font-display min-h-[100dvh] flex flex-col">
         <div className="flex items-center justify-center">
           <Loader2 className="animate-spin" /> {t("common.verifying_email")}
         </div>

@@ -8,7 +8,7 @@ export default function About() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden bg-glow transition-all duration-700">
+    <div className="min-h-dvh bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden bg-glow transition-all duration-700">
       <LandingHeader />
 
       {/* Hero Section */}

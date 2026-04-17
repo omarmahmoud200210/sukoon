@@ -9,7 +9,7 @@ export default function LandingPage() {
   const { t } = useTranslation();
 
   return (
-    <div className={`min-h-screen bg-surface text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed font-body transition-all duration-700 bg-glow overflow-x-hidden`}>
+    <div className={`min-h-[100dvh] bg-surface text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed font-body transition-all duration-700 bg-glow overflow-x-hidden`}>
       <LandingHeader />
 
       <main className="flex-1">

@@ -22,7 +22,7 @@ export default function NewsLetter() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden flex flex-col bg-glow transition-all duration-700">
+    <div className="min-h-[100dvh] bg-surface text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden flex flex-col bg-glow transition-all duration-700">
       <LandingHeader />
 
       {/* Main Content Area */}

@@ -10,7 +10,7 @@ export default function MainLayout() {
   const location = useLocation();
 
   return (
-    <div className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-screen overflow-hidden transition-colors duration-500 pb-[68px] md:pb-0">
+    <div className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-[100dvh] overflow-hidden transition-colors duration-500 pb-[calc(68px+env(safe-area-inset-bottom))] md:pb-0">
       <UserPanel />
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative shadow-2xl z-0 rounded-none md:rounded-s-[2.5rem] md:-ms-6 bg-background">

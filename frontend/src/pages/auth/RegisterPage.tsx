@@ -79,7 +79,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex overflow-hidden transition-all duration-700 font-body">
+    <div className="min-h-[100dvh] bg-background flex overflow-hidden transition-all duration-700 font-body">
       {/* Visual Section - Compacted */}
       <section className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary-container items-center justify-center p-12">
         <div className="absolute inset-0 pointer-events-none">

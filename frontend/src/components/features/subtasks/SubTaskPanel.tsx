@@ -136,7 +136,7 @@ export default function SubTaskPanel() {
             transition: { duration: 0.2 },
           }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full fixed inset-0 z-50 xl:static xl:w-[420px] xl:z-20 shrink-0 bg-surface-container-lowest/95 backdrop-blur-2xl flex flex-col h-full border-s border-outline-variant/10"
+          className="w-full fixed inset-0 z-50 xl:static xl:w-[420px] xl:z-20 shrink-0 bg-surface-container-lowest/95 backdrop-blur-2xl flex flex-col h-[100dvh] xl:h-full border-s border-outline-variant/10"
           style={{
             boxShadow: isRtl
               ? "8px 0 30px -15px rgba(0,0,0,0.12)"
@@ -144,7 +144,7 @@ export default function SubTaskPanel() {
           }}
         >
           {/* TickTick Style Header */}
-          <header className="h-13 flex items-center justify-between px-5 shrink-0 border-b border-outline-variant/5">
+          <header className="min-h-[3.25rem] pt-[env(safe-area-inset-top)] flex items-center justify-between px-5 shrink-0 border-b border-outline-variant/5">
             <div className="flex items-center">
               <button
                 onClick={handleClose}
@@ -173,16 +173,20 @@ export default function SubTaskPanel() {
             {/* Task Title & Completion Toggle */}
             <div className="flex items-start gap-3 group">
               <button
-                className={`cursor-pointer mt-0.5 w-[1.15rem] h-[1.15rem] rounded-sm border-[1.5px] flex items-center justify-center transition-all shrink-0 ${
-                  currentTaskDetails?.isCompleted
-                    ? "bg-primary border-primary text-on-primary shadow-sm"
-                    : "border-outline-variant/40 hover:border-primary group-hover:border-primary"
-                }`}
+                className="cursor-pointer -ms-2 -mt-2 p-2 flex items-center justify-center shrink-0 group/btn"
                 onClick={handleToggleSelectedTask}
               >
-                {currentTaskDetails?.isCompleted && (
-                  <Check className="w-3 h-3" strokeWidth={3} />
-                )}
+                <div
+                  className={`w-[1.15rem] h-[1.15rem] rounded-sm border-[1.5px] flex items-center justify-center transition-all ${
+                    currentTaskDetails?.isCompleted
+                      ? "bg-primary border-primary text-on-primary shadow-sm"
+                      : "border-outline-variant/40 group-hover/btn:border-primary"
+                  }`}
+                >
+                  {currentTaskDetails?.isCompleted && (
+                    <Check className="w-3 h-3" strokeWidth={3} />
+                  )}
+                </div>
               </button>
 
               <div className="flex-1">
@@ -198,7 +202,7 @@ export default function SubTaskPanel() {
                   />
                 ) : (
                   <h3
-                    className={`text-[1.05rem] font-display font-medium leading-snug cursor-text transition-all duration-300 w-full min-h-6 wrap-break-word ${
+                    className={`text-[1.05rem] font-display font-medium leading-snug cursor-text transition-all duration-300 w-full min-h-6 break-words whitespace-normal ${
                       currentTaskDetails?.isCompleted
                         ? "text-on-surface-variant/40 line-through"
                         : "text-on-surface"
@@ -222,7 +226,6 @@ export default function SubTaskPanel() {
                 onSelect={(date) =>
                   handleDateSelect(currentTaskDetails.id!, date)
                 }
-                position="left"
                 alwaysVisible
                 isOverdue={isOverdue}
               />
@@ -302,7 +305,7 @@ export default function SubTaskPanel() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.97 }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-14 start-4 end-4 max-h-[45%] flex flex-col bg-surface-container-lowest/95 backdrop-blur-2xl border border-outline-variant/10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] z-50 rounded-2xl overflow-hidden"
+                className="fixed inset-x-0 bottom-0 rounded-t-3xl xl:absolute xl:bottom-14 xl:inset-x-auto xl:start-4 xl:end-4 max-h-[85vh] xl:max-h-[45%] flex flex-col bg-surface-container-lowest/95 backdrop-blur-2xl border border-outline-variant/10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] z-50 xl:rounded-2xl overflow-hidden pb-[env(safe-area-inset-bottom)] xl:pb-0"
               >
                 <div className="flex items-center justify-between px-5 pt-3 pb-2 border-b border-outline-variant/5 shrink-0 bg-surface-container-highest/20">
                   <h3 className="text-[0.65rem] font-bold text-on-surface-variant/50 uppercase tracking-widest font-label px-1">
@@ -325,7 +328,7 @@ export default function SubTaskPanel() {
           </AnimatePresence>
 
           {/* TickTick Style Bottom Action Bar */}
-          <footer className="h-11 flex items-center justify-between px-5 border-t border-outline-variant/5 shrink-0 bg-surface-container-lowest relative z-40 text-on-surface-variant/40">
+          <footer className="min-h-[2.75rem] py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex items-center justify-between px-5 border-t border-outline-variant/5 shrink-0 bg-surface-container-lowest relative z-40 text-on-surface-variant/40">
             <button
               onClick={() => setShowComments((prev) => !prev)}
               className={`p-1.5 hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer rounded-lg flex items-center gap-2 ${showComments ? "bg-primary/10 text-primary" : ""}`}

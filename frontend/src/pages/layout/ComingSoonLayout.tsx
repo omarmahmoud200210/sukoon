@@ -11,7 +11,7 @@ export default function ComingSoonLayout() {
 
   return (
     <div
-      className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-screen overflow-hidden transition-colors duration-500"
+      className="bg-background text-on-surface font-body selection:bg-primary/30 flex h-[100dvh] overflow-hidden transition-colors duration-500"
       dir={isRtl ? "rtl" : "ltr"}
     >
       <UserPanel />

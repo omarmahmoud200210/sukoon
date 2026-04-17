@@ -79,7 +79,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex overflow-hidden font-body transition-all duration-700">
+    <div className="min-h-dvh bg-background flex overflow-hidden font-body transition-all duration-700">
       {/* Visual Section - Compacted */}
       <section className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-primary-container items-center justify-center p-12">
         <div className="absolute inset-0 pointer-events-none">

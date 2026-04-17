@@ -15,7 +15,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-[68px] bg-background/90 backdrop-blur-lg border-t border-outline-variant/10 z-60 flex md:hidden items-center justify-around px-2 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 min-h-[68px] bg-background/90 backdrop-blur-lg border-t border-outline-variant/10 z-60 flex md:hidden items-center justify-around px-2 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] box-border">
       {navLinks.map((link) => (
         <Link
           key={link.to}
