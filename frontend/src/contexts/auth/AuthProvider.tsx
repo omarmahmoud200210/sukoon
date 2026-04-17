@@ -36,17 +36,25 @@ export default function AuthProvider({
     };
     checkAuth();
   }, []);
-  
+
   const login = async ({ data }: { data: LoginUserData }) => {
     setIsLoading(true);
     try {
       const result = await authService.login(data);
-      if (result.success) {
-        setUser(result.data);
+      if (result.status) {
+        setUser(result.user);
         setIsAuthenticated(true);
+        setIsVerified(result.user.isVerified);
+        return { isVerified: result.user.isVerified };
+      } else {
+        setIsVerified(false);
+        setIsAuthenticated(false);
+        setUser(null);
+        return { isVerified: false };
       }
     } catch (error) {
       logger.error("Login failed:", error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -87,34 +95,36 @@ export default function AuthProvider({
       const result = await authService.verifyEmail(token);
       if (result) {
         setIsVerified(true);
-        setUser((prev) => prev ? {...prev, isVerified: true} : null);
+        setUser((prev) => (prev ? { ...prev, isVerified: true } : null));
       }
-    }
-    catch {
+    } catch {
       setIsVerified(false);
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const updateName = async (firstName: string, lastName: string) => {
     await authService.updateName({ firstName, lastName });
-    setUser((prev) => prev ? { ...prev, firstName, lastName } : null);
+    setUser((prev) => (prev ? { ...prev, firstName, lastName } : null));
   };
 
   const updateAvatar = async (formData: FormData) => {
     const result = await authService.updateAvatar(formData);
-    const newAvatarUrl = result?.data?.avatarUrl || result?.user?.avatarUrl || result?.avatarUrl;
+    const newAvatarUrl =
+      result?.data?.avatarUrl || result?.user?.avatarUrl || result?.avatarUrl;
     if (newAvatarUrl) {
-      setUser((prev) => prev ? { ...prev, avatarUrl: newAvatarUrl } : null);
+      setUser((prev) => (prev ? { ...prev, avatarUrl: newAvatarUrl } : null));
     } else {
       const me = await authService.getMe();
       if (me) setUser(me);
     }
   };
 
-  const changePassword = async (currentPassword: string, newPassword: string) => {
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+  ) => {
     await authService.changePassword({ currentPassword, newPassword });
   };
 

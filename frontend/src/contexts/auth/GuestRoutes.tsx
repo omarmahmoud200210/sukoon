@@ -4,7 +4,7 @@ import { useAuth } from "./useAuth";
 import { useTranslation } from "react-i18next";
 
 export default function GuestRoutes() {
-  const { user, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -18,7 +18,7 @@ export default function GuestRoutes() {
     );
   }
 
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return <Outlet />;
 }

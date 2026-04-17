@@ -11,8 +11,8 @@ const API_URL = "/auth";
 
 // LOGIN API
 const login = async (LoginData: LoginUserData) => {
-  const { data } = await api.post(`${API_URL}/login`, LoginData);
-  return data;
+  const { status, data: user } = await api.post(`${API_URL}/login`, LoginData);
+  return { status, user };
 };
 
 // REGISTER API
@@ -43,7 +43,10 @@ const forgotPassword = async (email: string) => {
 
 // RESET PASSWORD API
 const resetPassword = async (ResetPasswordData: ResetPasswordData) => {
-  const { data } = await api.post(`${API_URL}/reset-password`, ResetPasswordData);
+  const { data } = await api.post(
+    `${API_URL}/reset-password`,
+    ResetPasswordData,
+  );
   return data;
 };
 
@@ -70,7 +73,10 @@ const updateAvatar = async (formData: FormData) => {
 };
 
 const changePassword = async (ChangePasswordData: ChangePasswordData) => {
-  const { data } = await api.patch(`${API_URL}/me/password`, ChangePasswordData);
+  const { data } = await api.patch(
+    `${API_URL}/me/password`,
+    ChangePasswordData,
+  );
   return data;
 };
 

@@ -186,7 +186,8 @@
     "forgot_password_success": "If your email is registered and verified, you will receive a reset link shortly.",
     "reset_password_success": "Password reset successfully!",
     "invalid_email": "Please enter a valid email address",
-    "password_too_short": "Password must be at least 6 characters"
+    "password_too_short": "Password must be at least 6 characters",
+    "not_verified": "Your email is not verified. Please check your email to verify it."
   },
   "timer": {
     "focusFor": "Focus for",

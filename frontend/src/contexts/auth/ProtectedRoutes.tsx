@@ -4,9 +4,8 @@ import { useAuth } from "./useAuth";
 import { useTranslation } from "react-i18next";
 
 export default function ProtectedRoutes() {
-  const { user, isLoading } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
   const { t } = useTranslation();
-  const isAuthenticated = !!user;
 
   if (isLoading) {
     return (

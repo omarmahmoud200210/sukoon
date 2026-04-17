@@ -32,7 +32,7 @@ export type AuthContextType = {
   isAuthenticated: boolean;
   isVerified: boolean;
   verifyUser: (token: string) => Promise<void>;
-  login: ({ data }: { data: LoginUserData }) => Promise<void>;
+  login: ({ data }: { data: LoginUserData }) => Promise<{ isVerified: boolean }>;
   register: ({ data }: { data: RegisterUserData }) => Promise<void>;
   logout: () => Promise<void>;
   updateName: (firstName: string, lastName: string) => Promise<void>;
