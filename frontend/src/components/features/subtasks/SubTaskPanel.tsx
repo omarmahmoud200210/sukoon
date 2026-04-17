@@ -28,12 +28,10 @@ export default function SubTaskPanel() {
   const {
     selectedTask,
     isEditingTitle,
-    editedTitle,
     handleStartEditingTitle,
     handleTitleKeyDown,
     handleBlurTitle,
     isEditingDescription,
-    editedDescription,
     handleStartEditingDescription,
     handleBlurDescription,
     handleTitleChangeDebounced,
@@ -59,6 +57,47 @@ export default function SubTaskPanel() {
       id: taskId,
       data: { dueDate: date ? date.toISOString() : undefined },
     });
+  };
+
+  const [localTitle, setLocalTitle] = useState(currentTaskDetails?.title || "");
+  const [localDescription, setLocalDescription] = useState(
+    currentTaskDetails?.description || "",
+  );
+
+  const [prevDetails, setPrevDetails] = useState({
+    id: currentTaskDetails?.id,
+    title: currentTaskDetails?.title,
+    description: currentTaskDetails?.description,
+  });
+
+  if (
+    currentTaskDetails?.id !== prevDetails.id ||
+    currentTaskDetails?.title !== prevDetails.title ||
+    currentTaskDetails?.description !== prevDetails.description
+  ) {
+    setPrevDetails({
+      id: currentTaskDetails?.id,
+      title: currentTaskDetails?.title,
+      description: currentTaskDetails?.description,
+    });
+
+    if (currentTaskDetails?.id !== prevDetails.id) {
+      setLocalTitle(currentTaskDetails?.title || "");
+      setLocalDescription(currentTaskDetails?.description || "");
+    } else {
+      if (!isEditingTitle) setLocalTitle(currentTaskDetails?.title || "");
+      if (!isEditingDescription) setLocalDescription(currentTaskDetails?.description || "");
+    }
+  }
+
+  const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalTitle(e.target.value);
+    handleTitleChangeDebounced(e.target.value);
+  };
+
+  const onDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setLocalDescription(e.target.value);
+    handleDescriptionChangeDebounced(e.target.value);
   };
 
   const handleChangeProirity = (taskId: string, priority: string) => {
@@ -91,10 +130,18 @@ export default function SubTaskPanel() {
           key={selectedTask.id}
           initial={{ opacity: 0, x: isRtl ? -30 : 30 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: isRtl ? 30 : -30, transition: { duration: 0.2 } }}
+          exit={{
+            opacity: 0,
+            x: isRtl ? 30 : -30,
+            transition: { duration: 0.2 },
+          }}
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="w-full fixed inset-0 z-50 xl:static xl:w-[420px] xl:z-20 shrink-0 bg-surface-container-lowest/95 backdrop-blur-2xl flex flex-col h-full border-s border-outline-variant/10"
-          style={{ boxShadow: isRtl ? '8px 0 30px -15px rgba(0,0,0,0.12)' : '-8px 0 30px -15px rgba(0,0,0,0.12)' }}
+          style={{
+            boxShadow: isRtl
+              ? "8px 0 30px -15px rgba(0,0,0,0.12)"
+              : "-8px 0 30px -15px rgba(0,0,0,0.12)",
+          }}
         >
           {/* TickTick Style Header */}
           <header className="h-13 flex items-center justify-between px-5 shrink-0 border-b border-outline-variant/5">
@@ -143,8 +190,8 @@ export default function SubTaskPanel() {
                   <input
                     autoFocus
                     type="text"
-                    value={editedTitle}
-                    onChange={(e) => handleTitleChangeDebounced(e.target.value)}
+                    value={localTitle}
+                    onChange={onTitleChange}
                     onBlur={handleBlurTitle}
                     onKeyDown={handleTitleKeyDown}
                     className="text-[1.05rem] font-display font-medium leading-snug bg-transparent border-none outline-none text-on-surface w-full p-0"
@@ -158,9 +205,7 @@ export default function SubTaskPanel() {
                     }`}
                     onClick={handleStartEditingTitle}
                   >
-                    {currentTaskDetails?.title ||
-                      t("common.no_title") ||
-                      "No title"}
+                    {localTitle || t("common.no_title") || "No title"}
                   </h3>
                 )}
               </div>
@@ -209,15 +254,9 @@ export default function SubTaskPanel() {
                   (t("common.description_placeholder") ||
                     "Description...") as string
                 }
-                value={
-                  isEditingDescription
-                    ? editedDescription
-                    : currentTaskDetails?.description || ""
-                }
+                value={localDescription}
+                onChange={onDescriptionChange}
                 onFocus={handleStartEditingDescription}
-                onChange={(e) =>
-                  handleDescriptionChangeDebounced(e.target.value)
-                }
                 onBlur={handleBlurDescription}
                 className="w-full min-h-[100px] text-[0.85rem] leading-relaxed bg-transparent border-none outline-none text-on-surface-variant placeholder:text-on-surface-variant/30 focus:text-on-surface transition-all duration-300 resize-none font-body"
               />
