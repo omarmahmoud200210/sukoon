@@ -100,8 +100,12 @@ export default function useTimerControls() {
       logger.info("Audio blocked by browser autoplay rules:", error);
     });
 
-    if (Notification.permission === "granted") {
-      new Notification(title, { body });
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification(title, { body });
+      } catch (error) {
+        logger.error("Failed to create notification:", error);
+      }
     }
   }
 

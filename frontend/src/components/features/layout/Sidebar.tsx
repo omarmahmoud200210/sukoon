@@ -144,7 +144,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <div className="px-3 pt-4 pb-6 border-t border-outline-variant/10">
+      <div className="px-3 pt-4 pb-24 md:pb-6 border-t border-outline-variant/10">
         <PrayerCountdownWidget />
         <div className="space-y-0.5">
           <Link
