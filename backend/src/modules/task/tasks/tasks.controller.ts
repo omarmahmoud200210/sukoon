@@ -37,7 +37,11 @@ class TasksController {
     const userId = req.user!.id;
     const cursor = req.query.cursor ? Number(req.query.cursor) : undefined;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
-    const tasks = await this.taskService.getUpcomingTasks(userId, cursor, limit);
+    const tasks = await this.taskService.getUpcomingTasks(
+      userId,
+      cursor,
+      limit,
+    );
     res.status(200).json(tasks);
   };
 
@@ -81,7 +85,16 @@ class TasksController {
 
   update: RequestHandler = async (req, res) => {
     const { id } = req.params;
-    const { title, description, priority, dueDate, isCompleted, tagIds, listId, position } = req.body;
+    const {
+      title,
+      description,
+      priority,
+      dueDate,
+      isCompleted,
+      tagIds,
+      listId,
+      position,
+    } = req.body;
     const userId = req.user!.id;
 
     if (typeof id !== "string") {
@@ -110,7 +123,11 @@ class TasksController {
     const userId = req.user!.id;
     const cursor = req.query.cursor ? Number(req.query.cursor) : undefined;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
-    const tasks = await this.taskService.getAllTrashTasks(userId, cursor, limit);
+    const tasks = await this.taskService.getAllTrashTasks(
+      userId,
+      cursor,
+      limit,
+    );
     return res.status(200).json(tasks);
   };
 

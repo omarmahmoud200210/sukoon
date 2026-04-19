@@ -33,54 +33,85 @@ export default function TaskList({
   const { t } = useTranslation();
 
   const { data: overdueTasksData } = useOverdueTasks();
-  const overdueIds = useMemo(() => new Set(
-    (Array.isArray(overdueTasksData) ? overdueTasksData : []).map((t) => t.id)
-  ), [overdueTasksData]);
+  const overdueIds = useMemo(
+    () =>
+      new Set(
+        (Array.isArray(overdueTasksData) ? overdueTasksData : []).map(
+          (t) => t.id,
+        ),
+      ),
+    [overdueTasksData],
+  );
 
-  const pendingTasks = useMemo(() => (tasks || [])
-    .filter((t) => t.isCompleted !== true)
-    .filter((t) => {
-      if (currentListId) return String(t.listId) === String(currentListId);
-      if (currentTagId)
-        return t.tags && t.tags.some((tag) => tag.id === currentTagId);
-      if (filter === "all" || filter === "today" || filter === "next7days") {
-        return !t.listId;
-      }
-      return true;
-    }), [tasks, filter, currentListId, currentTagId]);
+  const pendingTasks = useMemo(
+    () =>
+      (tasks || [])
+        .filter((t) => t.isCompleted !== true)
+        .filter((t) => {
+          if (currentListId) return String(t.listId) === String(currentListId);
+          if (currentTagId)
+            return t.tags && t.tags.some((tag) => tag.id === currentTagId);
+          if (
+            filter === "all" ||
+            filter === "today" ||
+            filter === "next7days"
+          ) {
+            return !t.listId;
+          }
+          return true;
+        }),
+    [tasks, filter, currentListId, currentTagId],
+  );
 
-  const completedTasks = useMemo(() => (tasks || [])
-    .filter((t) => t.isCompleted === true)
-    .filter((t) => {
-      if (currentListId) return String(t.listId) === String(currentListId);
-      if (currentTagId)
-        return t.tags && t.tags.some((tag) => tag.id === currentTagId);
-      if (filter === "all" || filter === "completed") {
-        return !t.listId;
-      }
-      return true;
-    }), [tasks, filter, currentListId, currentTagId]);
+  const completedTasks = useMemo(
+    () =>
+      (tasks || [])
+        .filter((t) => t.isCompleted === true)
+        .filter((t) => {
+          if (currentListId) return String(t.listId) === String(currentListId);
+          if (currentTagId)
+            return t.tags && t.tags.some((tag) => tag.id === currentTagId);
+          if (filter === "all" || filter === "completed") {
+            return !t.listId;
+          }
+          return true;
+        }),
+    [tasks, filter, currentListId, currentTagId],
+  );
 
-  const showPending = useMemo(() => filter === "all" || !!currentListId || filter.startsWith("tag-"), [filter, currentListId]);
-  
-  const showCompleted = useMemo(() => filter === "all" ||
-    filter === "completed" ||
-    !!currentListId ||
-    filter.startsWith("tag-"), [filter, currentListId]);
-  
+  const showPending = useMemo(
+    () => filter === "all" || !!currentListId || filter.startsWith("tag-"),
+    [filter, currentListId],
+  );
+
+  const showCompleted = useMemo(
+    () =>
+      filter === "all" ||
+      filter === "completed" ||
+      !!currentListId ||
+      filter.startsWith("tag-"),
+    [filter, currentListId],
+  );
+
   const showTrash = filter === "trash";
 
   const showTodayTasks = filter === "today";
   const showUpcomingTasks = filter === "next7days";
 
-  const filteredTodayTasks = useMemo(() => (todayTasks || []).filter((t) => !t.listId), [todayTasks]);
-  const filteredUpcomingTasks = useMemo(() => (upcomingTasks || []).filter((t) => !t.listId), [upcomingTasks]);
+  const filteredTodayTasks = useMemo(
+    () => (todayTasks || []).filter((t) => !t.listId),
+    [todayTasks],
+  );
+  const filteredUpcomingTasks = useMemo(
+    () => (upcomingTasks || []).filter((t) => !t.listId),
+    [upcomingTasks],
+  );
 
   if (isLoading) {
     return <TaskItemSkeleton />;
   }
 
-  const isViewEmpty = 
+  const isViewEmpty =
     (!showPending || pendingTasks.length === 0) &&
     (!showCompleted || completedTasks.length === 0) &&
     (!showTodayTasks || filteredTodayTasks.length === 0) &&
@@ -93,7 +124,9 @@ export default function TaskList({
         <div className="w-16 h-16 mb-4 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/30">
           <span className="material-symbols-outlined text-3xl">task</span>
         </div>
-        <p className="text-on-surface-variant/60 font-medium text-sm">{t("tasks.noTasksFound")}</p>
+        <p className="text-on-surface-variant/60 font-medium text-sm">
+          {t("tasks.noTasksFound")}
+        </p>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { memo } from "react";
+
 import type { Task } from "@/types/tasks";
 import { useTaskEditor } from "@/hooks/useTaskEditor";
 import {
@@ -23,8 +23,6 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
   const { t } = useTranslation();
 
   const isCompleted = task.isCompleted;
-
-
 
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
@@ -133,4 +131,4 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
   );
 }
 
-export default memo(TaskItem);
+export default TaskItem;

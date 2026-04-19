@@ -74,21 +74,26 @@ export function TaskBoard({ children }: TaskBoardProps) {
     ]);
   }, [allTasksData]);
 
-  const trashTasks = useMemo(() => 
-    trashTasksData?.data || (Array.isArray(trashTasksData) ? trashTasksData : []), 
-    [trashTasksData]
+  const trashTasks = useMemo(
+    () =>
+      trashTasksData?.data ||
+      (Array.isArray(trashTasksData) ? trashTasksData : []),
+    [trashTasksData],
   );
 
-  const todayTasks = useMemo(() => 
-    todayTasksData?.data || (Array.isArray(todayTasksData) ? todayTasksData : []), 
-    [todayTasksData]
+  const todayTasks = useMemo(
+    () =>
+      todayTasksData?.data ||
+      (Array.isArray(todayTasksData) ? todayTasksData : []),
+    [todayTasksData],
   );
 
-  const upcomingTasks = useMemo(() => 
-    upcomingTasksData?.data || (Array.isArray(upcomingTasksData) ? upcomingTasksData : []), 
-    [upcomingTasksData]
+  const upcomingTasks = useMemo(
+    () =>
+      upcomingTasksData?.data ||
+      (Array.isArray(upcomingTasksData) ? upcomingTasksData : []),
+    [upcomingTasksData],
   );
-
 
   const isLoading =
     isLoadingAll || isLoadingTrash || isLoadingToday || isLoadingUpcoming;

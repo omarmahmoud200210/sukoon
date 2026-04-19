@@ -11,7 +11,10 @@ interface TaskSectionProps {
   overdueIds: Set<string>;
 }
 
-export default function TaskSection({ taskSection, overdueIds }: TaskSectionProps) {
+export default function TaskSection({
+  taskSection,
+  overdueIds,
+}: TaskSectionProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(
     taskSection.defaultExpanded || false,
@@ -21,8 +24,6 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
   const container = getReducedVariants(shouldReduce, listContainer);
   const item = getReducedVariants(shouldReduce, listItem);
 
-
-
   if (taskSection.tasks.length === 0 && !taskSection.isCompleted) return null;
 
   if (taskSection.tasks.length === 0 && taskSection.isCompleted) {
@@ -31,7 +32,12 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
         <div
           className="flex items-center gap-2.5 mb-2 cursor-pointer group w-fit transition-all ps-1"
           onClick={() => setIsExpanded(!isExpanded)}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsExpanded(!isExpanded); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsExpanded(!isExpanded);
+            }
+          }}
           role="button"
           tabIndex={0}
           aria-label={`${isExpanded ? t("common.collapse") : t("common.expand")} ${taskSection.title}`}
@@ -52,7 +58,6 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
             </span>
           </h2>
         </div>
-
       </div>
     );
   }
@@ -62,7 +67,12 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
       <div
         className="flex items-center gap-2.5 mb-2 cursor-pointer group w-fit transition-all ps-1"
         onClick={() => setIsExpanded(!isExpanded)}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsExpanded(!isExpanded); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
         role="button"
         tabIndex={0}
         aria-label={`${isExpanded ? t("common.collapse") : t("common.expand")} ${taskSection.title}`}
@@ -106,7 +116,6 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
           </AnimatePresence>
         </div>
       )}
-
 
       {isExpanded && taskSection.isCompleted && hasNextPage && (
         <button
