@@ -61,7 +61,7 @@ export default function Comments({ taskId}: { taskId: string; }) {
                     {comment.content}
                   </p>
                 </div>
-                <div className="absolute top-0.5 end-1 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-surface-container-highest rounded-md shadow-sm">
+                <div className="absolute top-0.5 end-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 bg-surface-container-highest rounded-md shadow-sm">
                   <ItemActionsMenu 
                     mode="Comment"
                     currentName={comment.content}

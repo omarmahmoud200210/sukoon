@@ -55,7 +55,7 @@ export default function TimerActionMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 text-on-surface-variant/40 hover:text-primary rounded-md hover:bg-surface-container-high transition-colors opacity-0 group-hover:opacity-100 z-10"
+            className="p-1.5 text-on-surface-variant/40 hover:text-primary rounded-md hover:bg-surface-container-high transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 z-10"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreHorizontal className="w-4 h-4" />

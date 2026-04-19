@@ -143,7 +143,7 @@ export default function SubTaskItem() {
             />
             <button
               onClick={() => handleDeleteSubtask(subTask.id)}
-              className="cursor-pointer opacity-0 group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded-lg text-on-surface-variant/10 hover:text-error hover:bg-error/5 transition-all duration-300"
+              className="cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 w-6 h-6 flex items-center justify-center rounded-lg text-on-surface-variant/10 hover:text-error hover:bg-error/5 transition-all duration-300"
             >
               <span className="material-symbols-outlined text-[14px]!">
                 close

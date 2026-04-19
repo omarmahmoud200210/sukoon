@@ -38,7 +38,7 @@ export default function ListItem({
         <span className="truncate pe-6">{list.title}</span>
       </Link>
 
-      <div className="absolute end-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute end-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
         <ItemActionsMenu
           mode="list"
           currentName={list.title}

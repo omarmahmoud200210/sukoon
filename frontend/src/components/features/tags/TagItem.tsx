@@ -33,7 +33,7 @@ export default function TagItem({ tag, isActive, onSelect, onDelete }: TagItemPr
         <span className="truncate pe-6">{tag.name}</span>
       </Link>
 
-      <div className="absolute end-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute end-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
         <ItemActionsMenu
           mode="tag"
           currentName={tag.name}

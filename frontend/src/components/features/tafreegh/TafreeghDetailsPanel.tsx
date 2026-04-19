@@ -200,7 +200,7 @@ export default function TafreeghDetailsPanel() {
                   <p className="text-sm md:text-base whitespace-pre-wrap leading-relaxed text-on-surface font-body overflow-clip">
                     {activeTafreegh.content}
                   </p>
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <span className="material-symbols-outlined text-[16px]! text-primary">
                       edit
                     </span>

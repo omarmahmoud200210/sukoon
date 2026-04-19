@@ -165,7 +165,7 @@ export default function Timer({
         {activeTask && (
           <button
             onClick={onClear}
-            className="p-1.5 hover:bg-on-primary/10 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+            className="p-1.5 hover:bg-on-primary/10 rounded-full transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer"
             title={t("common.clear")}
           >
             <X className="w-4 h-4" />

@@ -240,7 +240,6 @@ export default function TimerList() {
           activeTask={currentActiveTask}
           onClear={() => {
             setManualActiveTask(null);
-            reset();
           }}
           timerControls={timerControls}
         />

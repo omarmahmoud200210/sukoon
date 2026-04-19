@@ -60,7 +60,7 @@ export default function DatePickerPopover({
               ? "text-primary bg-primary/10 hover:bg-primary/20"
               : alwaysVisible
                 ? "text-on-surface-variant/60 hover:text-primary hover:bg-surface-container-high"
-                : "text-on-surface-variant/40 opacity-0 group-hover:opacity-100 hover:text-primary hover:bg-surface-container-high"
+                : "text-on-surface-variant/40 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-primary hover:bg-surface-container-high"
         }`}
       >
         <Calendar className="w-3.5 h-3.5" />

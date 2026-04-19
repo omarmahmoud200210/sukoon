@@ -19,11 +19,7 @@ import quoteRouter from "./modules/quranAya/quranAya.route.js";
 import tafreeghRouter from "./modules/tafreegh/tafreegh.route.js";
 import personalizedAyaRouter from "./modules/personalizedAya/personalizedAya.route.js";
 import adminRouter from "./modules/admin/admin.route.js";
-import {
-  personalizedQuranAyaCronJob,
-  quranAyaCronJob,
-  splittingSessionsCronJob,
-} from "./shared/jobs/cron-jobs.js";
+import cronRouter from "./modules/cron/cron.route.js";
 import type { Application, Request, Response, NextFunction } from "express";
 import { AppError } from "./shared/middleware/error.js";
 
@@ -36,7 +32,6 @@ export class App {
     dotenv.config();
     this.initializeMiddleware();
     this.initializeRoutes();
-    this.initializeCronJobs();
   }
 
   initializeMiddleware() {
@@ -65,6 +60,7 @@ export class App {
     this.app.use("/api/v1/tafreegh", checkAuth, tafreeghRouter);
     this.app.use("/api/v1/personalized-aya", checkAuth, personalizedAyaRouter);
     this.app.use("/api/v1/admin", checkAuth, adminRouter);
+    this.app.use("/api/v1/cron", cronRouter);
     this.initializeErrorHandling();
   }
 
@@ -101,12 +97,6 @@ export class App {
         });
       },
     );
-  }
-
-  initializeCronJobs() {
-    splittingSessionsCronJob();
-    quranAyaCronJob();
-    personalizedQuranAyaCronJob();
   }
 }
 
