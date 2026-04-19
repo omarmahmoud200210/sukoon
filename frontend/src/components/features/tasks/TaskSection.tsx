@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TaskItem from "./TaskItem";
-import { Virtuoso } from "react-virtuoso";
 import { useTranslation } from "react-i18next";
 import type { TaskSection as TaskSectionType } from "@/types/tasks";
 import { useTasks } from "@/hooks/useTasks";
@@ -21,16 +20,6 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
   const shouldReduce = useReducedMotion();
   const container = getReducedVariants(shouldReduce, listContainer);
   const item = getReducedVariants(shouldReduce, listItem);
-  const [scrollParent, setScrollParent] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setScrollParent(document.getElementById("dashboard-scroll"));
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-  const USE_VIRTUALIZATION_THRESHOLD = 30;
-  const isHugeList = taskSection.tasks.length > USE_VIRTUALIZATION_THRESHOLD;
 
 
 
@@ -97,41 +86,27 @@ export default function TaskSection({ taskSection, overdueIds }: TaskSectionProp
 
       {isExpanded && (
         <div className="pt-0">
-          {isHugeList && scrollParent ? (
-             <Virtuoso
-               useWindowScroll
-               customScrollParent={scrollParent}
-               data={taskSection.tasks}
-               itemContent={(_, task) => (
+          <AnimatePresence>
+            <motion.div
+              variants={container}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              {taskSection.tasks.map((task) => (
+                <motion.div key={task.id} variants={item}>
                   <TaskItem
                     task={task}
                     isTrashMode={taskSection.mode === "trash"}
                     isOverdue={overdueIds.has(task.id)}
                   />
-               )}
-             />
-          ) : (
-            <AnimatePresence>
-              <motion.div
-                variants={container}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
-                {taskSection.tasks.map((task) => (
-                  <motion.div key={task.id} variants={item}>
-                    <TaskItem
-                      task={task}
-                      isTrashMode={taskSection.mode === "trash"}
-                      isOverdue={overdueIds.has(task.id)}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          )}
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       )}
+
 
       {isExpanded && taskSection.isCompleted && hasNextPage && (
         <button
