@@ -66,19 +66,29 @@ export function TaskBoard({ children }: TaskBoardProps) {
   const { data: upcomingTasksData, isLoading: isLoadingUpcoming } =
     useUpcomingTasks();
 
-  const tasks = useMemo(() => allTasksData
-    ? allTasksData.pages.flatMap((page) => [
-        ...(page.notCompletedTasks || []),
-        ...(page.completedTasks || []),
-      ])
-    : [], [allTasksData]);
-  const trashTasks = useMemo(() => Array.isArray(trashTasksData) ? trashTasksData : [], [trashTasksData]);
+  const tasks = useMemo(() => {
+    if (!allTasksData?.pages) return [];
+    return allTasksData.pages.flatMap((page) => [
+      ...(page.notCompletedTasks || []),
+      ...(page.completedTasks || []),
+    ]);
+  }, [allTasksData]);
 
-  const todayTasks = useMemo(() => Array.isArray(todayTasksData) ? todayTasksData : [], [todayTasksData]);
+  const trashTasks = useMemo(() => 
+    trashTasksData?.data || (Array.isArray(trashTasksData) ? trashTasksData : []), 
+    [trashTasksData]
+  );
 
-  const upcomingTasks = useMemo(() => Array.isArray(upcomingTasksData)
-    ? upcomingTasksData
-    : [], [upcomingTasksData]);
+  const todayTasks = useMemo(() => 
+    todayTasksData?.data || (Array.isArray(todayTasksData) ? todayTasksData : []), 
+    [todayTasksData]
+  );
+
+  const upcomingTasks = useMemo(() => 
+    upcomingTasksData?.data || (Array.isArray(upcomingTasksData) ? upcomingTasksData : []), 
+    [upcomingTasksData]
+  );
+
 
   const isLoading =
     isLoadingAll || isLoadingTrash || isLoadingToday || isLoadingUpcoming;

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   useUpdateTask,
   useDeleteTask,
+  useDeleteTrashTask,
   useOverdueTasks,
   useTask,
 } from "@/hooks/useTasks";
@@ -40,8 +41,7 @@ export default function SubTaskPanel() {
 
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
-
-  const deleteTrashTask = async (id: string) => deleteTask(id);
+  const { mutate: deleteTrashTask } = useDeleteTrashTask();
 
   const { data: overdueTasksData } = useOverdueTasks();
   const overdueTasks = Array.isArray(overdueTasksData) ? overdueTasksData : [];

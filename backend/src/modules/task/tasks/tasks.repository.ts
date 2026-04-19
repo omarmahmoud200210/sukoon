@@ -41,7 +41,7 @@ class TaskRepository {
     limit: number = 10,
   ): Pick<Prisma.TaskFindManyArgs, "take" | "skip" | "cursor"> {
     const query: Pick<Prisma.TaskFindManyArgs, "take" | "skip" | "cursor"> = {
-      take: limit + 1,
+      take: limit,
     };
 
     if (cursor !== undefined) {

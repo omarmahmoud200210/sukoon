@@ -5,6 +5,7 @@ import {
   useUpdateTask,
   useDeleteTask,
   useRestoreTrashTask,
+  useDeleteTrashTask,
 } from "@/hooks/useTasks";
 import DatePickerPopover from "@/components/DatePickerPopover";
 import ItemActionsMenu from "@/components/ItemActionsMenu";
@@ -29,8 +30,7 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
   const { mutate: deleteTask } = useDeleteTask();
   const { setSelectedTask } = useTaskEditor();
   const { mutate: restoreTrashTask } = useRestoreTrashTask();
-
-  const deleteTrashTask = async (id: string) => deleteTask(id);
+  const { mutate: deleteTrashTask } = useDeleteTrashTask();
 
   async function handleToggleTask(e: React.MouseEvent) {
     e.stopPropagation();

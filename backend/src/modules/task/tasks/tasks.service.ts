@@ -10,13 +10,12 @@ class TaskService {
   constructor(private taskRepository: TaskRepository) {}
 
   private cursorPaginate(tasks: Task[], limit: number) {
-    const hasNextPage = tasks.length > limit;
-    const results = hasNextPage ? tasks.slice(0, limit) : tasks;
-    const nextCursor = hasNextPage ? results[results.length - 1]!.id : null;
+    const hasNextPage = tasks.length === limit;
+    const results = tasks;
 
     return {
       data: results,
-      nextCursor,
+      nextCursor: hasNextPage ? results[results.length - 1]!.id : null,
       hasNextPage,
     };
   }

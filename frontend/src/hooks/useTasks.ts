@@ -209,3 +209,15 @@ export function useDeleteTask() {
     onError: onDeleteTaskError,
   });
 }
+
+export function useDeleteTrashTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: taskService.deleteTrashTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+    },
+    onError: onDeleteTaskError,
+  });
+}
