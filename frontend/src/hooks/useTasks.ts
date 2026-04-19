@@ -107,7 +107,7 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: taskService.createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all });
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
     onError: onCreateTaskError,
   });
