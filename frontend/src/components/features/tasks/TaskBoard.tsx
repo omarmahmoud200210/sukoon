@@ -147,6 +147,11 @@ export function TaskBoard({ children }: TaskBoardProps) {
     }
   })();
 
+  console.log("tasks: ", tasks);
+  console.log("trashTasks: ", trashTasks);
+  console.log("todayTasks: ", todayTasks);
+  console.log("upcomingTasks: ", upcomingTasks);
+
   return children({
     filter,
     tasks,
