@@ -111,7 +111,15 @@ export default function TaskSection({
                 </motion.div>
               ))}
             </motion.div>
+
           </AnimatePresence>
+            {taskSection.tasks.map((task) => (
+              <TaskItem
+                task={task}
+                isTrashMode={taskSection.mode === "trash"}
+                isOverdue={overdueIds.has(task.id)}
+              />
+            ))}
         </div>
       )}
 
