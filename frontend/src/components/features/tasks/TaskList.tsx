@@ -141,7 +141,7 @@ export default function TaskList({
             count: pendingTasks.length,
             defaultExpanded: true,
             mode: "task",
-            handleLoadMore: onLoadMore,
+            handleLoadMore: async () => {},
           }}
           overdueIds={overdueIds}
         />
@@ -157,6 +157,7 @@ export default function TaskList({
             defaultExpanded: true,
             mode: "completed",
             handleLoadMore: hasNextPage ? onLoadMore : async () => {},
+            hasNextPage,
           }}
           overdueIds={overdueIds}
         />

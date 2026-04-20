@@ -45,4 +45,5 @@ export type TaskSection = {
   mode: string | undefined;
   isTrashMode?: boolean;
   handleLoadMore: () => Promise<void>;
+  hasNextPage?: boolean;
 };

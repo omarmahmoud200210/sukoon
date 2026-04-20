@@ -2,7 +2,6 @@ import { useState } from "react";
 import TaskItem from "./TaskItem";
 import { useTranslation } from "react-i18next";
 import type { TaskSection as TaskSectionType } from "@/types/tasks";
-import { useTasks } from "@/hooks/useTasks";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { listContainer, listItem, getReducedVariants } from "@/lib/animations";
 
@@ -19,7 +18,6 @@ export default function TaskSection({
   const [isExpanded, setIsExpanded] = useState(
     taskSection.defaultExpanded || false,
   );
-  const { hasNextPage = false } = useTasks();
   const shouldReduce = useReducedMotion();
   const container = getReducedVariants(shouldReduce, listContainer);
   const item = getReducedVariants(shouldReduce, listItem);
@@ -117,7 +115,7 @@ export default function TaskSection({
         </div>
       )}
 
-      {isExpanded && taskSection.isCompleted && hasNextPage && (
+      {isExpanded && taskSection.hasNextPage && (
         <button
           className="mt-4 text-xs font-semibold text-primary/60 hover:text-primary hover:underline ps-6 cursor-pointer flex items-center gap-1.5"
           onClick={taskSection.handleLoadMore}
