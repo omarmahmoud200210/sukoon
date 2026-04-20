@@ -23,7 +23,9 @@ class AuthenticationController {
       return res.status(200).json(userLogin.user);
     }
 
-    throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
+    throw AppError.Unauthorized(
+      userLogin.message || AuthErrorCode.INVALID_CREDENTIALS,
+    );
   };
 
   getUserData: RequestHandler = async (req, res) => {

@@ -10,9 +10,9 @@ const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new pg.Pool({
   connectionString,
   max: parseInt(process.env.DB_POOL_SIZE || "10"),
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-  maxLifetimeSeconds: 600,
+  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
+  maxLifetimeSeconds: 30,
 });
 
 const adapter = new PrismaPg(pool);

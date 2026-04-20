@@ -19,12 +19,13 @@ class AuthenticationServices {
 
   login = async (email: string, password: string) => {
     const user = await this.authRepository.login(email);
-    if (!user) throw new Error("The User Not Exist");
+    if (!user) throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
 
     if (user?.isVerified) {
       const verifyPassword = await argon2.verify(user.passwordHashed, password);
 
-      if (!verifyPassword) throw new Error("Invalid password");
+      if (!verifyPassword)
+        throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
 
       return {
         tokens: generateTokens(user.id),
@@ -81,7 +82,7 @@ class AuthenticationServices {
     } catch (error) {
       logger.error(error);
       await this.authRepository.deleteAccount(newUser.id);
-      throw new Error(
+      throw AppError.InternalServerError(
         "Failed to send verification email. Please check your email configuration and try again.",
       );
     }
@@ -121,7 +122,7 @@ class AuthenticationServices {
 
   verifyEmail = async (token: string) => {
     const verifyToken = jwt.verify(token, process.env.JWT_VERIFICATION_TOKEN!);
-    if (!verifyToken) throw new Error("Invalid token");
+    if (!verifyToken) throw AppError.Unauthorized(AuthErrorCode.TOKEN_INVALID);
     const payload = verifyToken as jwt.JwtPayload;
     const user = await this.authRepository.getUser(Number(payload.id));
     if (!user) throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
