@@ -28,7 +28,7 @@ export default function ListItem({
             ? "bg-secondary text-on-secondary shadow-sm"
             : "hover:bg-surface-container-high text-on-surface-variant"
         }`}
-        to={`/dashboard?filter=list-${list.id}`}
+        to={`/dashboard?view=listid=${list.id}`}
         onClick={(e) => {
           e.preventDefault();
           onSelect(e);

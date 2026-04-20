@@ -7,7 +7,7 @@ export interface CreateTaskRequest {
   listId?: number;
   priority?: Priority;
   dueDate?: string;
-  tagIds?: number;
+  tagIds?: number[];
   position?: number;
 }
 export interface UpdateTaskRequest {

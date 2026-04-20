@@ -1,8 +1,13 @@
 import { useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  useTasks,
+  usePendingTasks,
+  useCompletedTasks,
+  useListTasks,
+  useTagTasks,
   useCreateTask,
+  useCreateTodayTask,
+  useCreateUpcomingTask,
   useTrashTasks,
   useTodayTasks,
   useUpcomingTasks,
@@ -16,63 +21,92 @@ import { useTranslation } from "react-i18next";
 interface TaskBoardProps {
   children: (props: {
     filter: string;
-    tasks: Task[];
+    view: string | null;
+    pendingTasks: Task[];
+    completedTasks: Task[];
     trashTasks: Task[];
-    todayTasks: Task[];
-    upcomingTasks: Task[];
     isLoading: boolean;
-    hasNextPage: boolean;
     currentListId?: string;
     currentTagId?: number;
     placeholder: string;
     pageTitle: string;
     handleAddTask: (taskData: CreateTask) => Promise<void>;
-    handleLoadMore: () => Promise<void>;
   }) => ReactNode;
 }
 
 export function TaskBoard({ children }: TaskBoardProps) {
   const [searchParams] = useSearchParams();
   const filter = searchParams.get("filter") || "all";
+  const view = searchParams.get("view");
   const { t } = useTranslation();
 
   const { mutateAsync: handleAddTaskAsync } = useCreateTask();
+  const { mutateAsync: handleAddTodayTaskAsync } = useCreateTodayTask();
+  const { mutateAsync: handleAddUpcomingTaskAsync } = useCreateUpcomingTask();
 
-  const LIMIT = 10;
+  const currentListId = view?.startsWith("listid=") ? view.split("=")[1] : undefined;
+  const currentTagId = view?.startsWith("tagid=") ? Number(view.split("=")[1]) : undefined;
 
-  const currentListId =
-    filter.startsWith("list-") && filter.split("-")[1] !== "undefined"
-      ? filter.split("-")[1]
-      : undefined;
-
-  const currentTagId =
-    filter.startsWith("tag-") && filter.split("-")[1] !== "undefined"
-      ? Number(filter.split("-")[1])
-      : undefined;
+  const isListView = !!currentListId;
+  const isTagView = !!currentTagId;
+  const isTodayView = filter === "today";
+  const isUpcomingView = filter === "next7days";
+  const isTrashView = filter === "trash";
+  const isStandardView = filter === "all" || filter === "completed";
 
   const { data: listsData } = useLists();
-
   const lists = listsData || [];
 
-  const {
-    data: allTasksData,
-    isLoading: isLoadingAll,
-    hasNextPage = false,
-    fetchNextPage,
-  } = useTasks(0, LIMIT);
+  // Lists
+  const { data: listPendingTasks, isLoading: isLoadingListP } = useListTasks(currentListId, "pending", { enabled: isListView });
+  const { data: listCompletedTasks, isLoading: isLoadingListC } = useListTasks(currentListId, "completed", { enabled: isListView });
 
+  // Tags
+  const { data: tagPendingTasks, isLoading: isLoadingTagP } = useTagTasks(currentTagId, "pending", { enabled: isTagView });
+  const { data: tagCompletedTasks, isLoading: isLoadingTagC } = useTagTasks(currentTagId, "completed", { enabled: isTagView });
+
+  // Today
+  const { data: todayPendingTasks, isLoading: isLoadingTodayP } = useTodayTasks("pending", { enabled: isTodayView });
+  const { data: todayCompletedTasks, isLoading: isLoadingTodayC } = useTodayTasks("completed", { enabled: isTodayView });
+
+  // Upcoming
+  const { data: upcomingPendingTasks, isLoading: isLoadingUpcomingP } = useUpcomingTasks("pending", { enabled: isUpcomingView });
+  const { data: upcomingCompletedTasks, isLoading: isLoadingUpcomingC } = useUpcomingTasks("completed", { enabled: isUpcomingView });
+
+  // Standard (All/Completed)
+  const { data: standardPendingTasks, isLoading: isLoadingPending } = usePendingTasks({ enabled: isStandardView });
+  const { data: standardCompletedTasks, isLoading: isLoadingCompleted } = useCompletedTasks({ enabled: isStandardView });
+
+  // Trash
   const { data: trashTasksData, isLoading: isLoadingTrash } = useTrashTasks();
-  const { data: todayTasksData, isLoading: isLoadingToday } = useTodayTasks();
-  const { data: upcomingTasksData, isLoading: isLoadingUpcoming } =
-    useUpcomingTasks();
 
-  const tasks = useMemo(() => {
-    if (!allTasksData?.pages) return [];
-    return allTasksData.pages.flatMap((page) => [
-      ...(page.notCompletedTasks || []),
-      ...(page.completedTasks || []),
-    ]);
-  }, [allTasksData]);
+  let pendingTasks: Task[] = [];
+  let completedTasks: Task[] = [];
+  let isLoading = false;
+
+  if (isListView) {
+    pendingTasks = listPendingTasks || [];
+    completedTasks = listCompletedTasks || [];
+    isLoading = isLoadingListP || isLoadingListC;
+  } else if (isTagView) {
+    pendingTasks = tagPendingTasks || [];
+    completedTasks = tagCompletedTasks || [];
+    isLoading = isLoadingTagP || isLoadingTagC;
+  } else if (isTodayView) {
+    pendingTasks = todayPendingTasks || [];
+    completedTasks = todayCompletedTasks || [];
+    isLoading = isLoadingTodayP || isLoadingTodayC;
+  } else if (isUpcomingView) {
+    pendingTasks = upcomingPendingTasks || [];
+    completedTasks = upcomingCompletedTasks || [];
+    isLoading = isLoadingUpcomingP || isLoadingUpcomingC;
+  } else if (isTrashView) {
+    isLoading = isLoadingTrash;
+  } else if (isStandardView) {
+    pendingTasks = standardPendingTasks || [];
+    completedTasks = standardCompletedTasks || [];
+    isLoading = isLoadingPending || isLoadingCompleted;
+  }
 
   const trashTasks = useMemo(
     () =>
@@ -80,23 +114,6 @@ export function TaskBoard({ children }: TaskBoardProps) {
       (Array.isArray(trashTasksData) ? trashTasksData : []),
     [trashTasksData],
   );
-
-  const todayTasks = useMemo(
-    () =>
-      todayTasksData?.data ||
-      (Array.isArray(todayTasksData) ? todayTasksData : []),
-    [todayTasksData],
-  );
-
-  const upcomingTasks = useMemo(
-    () =>
-      upcomingTasksData?.data ||
-      (Array.isArray(upcomingTasksData) ? upcomingTasksData : []),
-    [upcomingTasksData],
-  );
-
-  const isLoading =
-    isLoadingAll || isLoadingTrash || isLoadingToday || isLoadingUpcoming;
 
   const currentList = currentListId
     ? lists.find((l: List) => String(l.id) === String(currentListId))
@@ -116,12 +133,13 @@ export function TaskBoard({ children }: TaskBoardProps) {
       taskData.tagIds.push(currentTagId);
     }
 
-    await handleAddTaskAsync(taskData);
-  };
-
-  const handleLoadMore = async () => {
-    if (!hasNextPage) return;
-    await fetchNextPage();
+    if (isTodayView) {
+      await handleAddTodayTaskAsync(taskData);
+    } else if (isUpcomingView) {
+      await handleAddUpcomingTaskAsync(taskData);
+    } else {
+      await handleAddTaskAsync(taskData);
+    }
   };
 
   const placeholder = currentList
@@ -131,6 +149,9 @@ export function TaskBoard({ children }: TaskBoardProps) {
       : t("tasks.addTaskToInbox");
 
   const pageTitle = (function () {
+    if (isListView) return currentList?.title || t("common.allTasks");
+    if (isTagView) return currentTag?.name || t("common.allTasks");
+
     switch (filter) {
       case "all":
         return t("common.allTasks");
@@ -143,28 +164,21 @@ export function TaskBoard({ children }: TaskBoardProps) {
       case "trash":
         return t("common.trash");
       default:
-        return currentList?.title || currentTag?.name || t("common.allTasks");
+        return t("common.allTasks");
     }
   })();
 
-  console.log("tasks: ", tasks);
-  console.log("trashTasks: ", trashTasks);
-  console.log("todayTasks: ", todayTasks);
-  console.log("upcomingTasks: ", upcomingTasks);
-
   return children({
     filter,
-    tasks,
+    view,
+    pendingTasks,
+    completedTasks,
     trashTasks,
-    todayTasks,
-    upcomingTasks,
     isLoading,
-    hasNextPage,
     currentListId,
     currentTagId,
     placeholder,
     pageTitle,
     handleAddTask,
-    handleLoadMore,
   });
 }

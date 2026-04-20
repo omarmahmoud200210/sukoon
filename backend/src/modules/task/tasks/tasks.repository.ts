@@ -36,22 +36,6 @@ class TaskRepository {
     },
   };
 
-  private handleCursorPagination(
-    cursor?: number,
-    limit: number = 10,
-  ): Pick<Prisma.TaskFindManyArgs, "take" | "skip" | "cursor"> {
-    const query: Pick<Prisma.TaskFindManyArgs, "take" | "skip" | "cursor"> = {
-      take: limit,
-    };
-
-    if (cursor !== undefined) {
-      query.skip = 1;
-      query.cursor = { id: cursor };
-    }
-
-    return query;
-  }
-
   constructor() {}
 
   private transformTask(task: any) {
@@ -65,18 +49,16 @@ class TaskRepository {
   }
 
   async getAllCompletedTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
+    userId: number
   ): Promise<Task[]> {
     const tasks = await prisma.task.findMany({
       where: {
         isCompleted: true,
         userId,
         deletedAt: null,
+        listId: null
       },
       orderBy: { id: "asc" },
-      ...this.handleCursorPagination(cursor, limit),
       select: TaskRepository.TASK_SELECT,
     });
 
@@ -84,18 +66,16 @@ class TaskRepository {
   }
 
   async getAllUncompletedTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
+    userId: number
   ) {
     const tasks = await prisma.task.findMany({
       where: {
         isCompleted: false,
         userId,
         deletedAt: null,
+        listId: null
       },
       orderBy: { id: "asc" },
-      ...this.handleCursorPagination(cursor, limit),
       select: TaskRepository.TASK_SELECT,
     });
 
@@ -108,7 +88,11 @@ class TaskRepository {
     });
   }
 
-  async getTodaysTasks(userId: number, cursor?: number, limit: number = 10) {
+  async getTodaysTasks(userId: number, status?: "pending" | "completed" | "all") {
+    let isCompletedFilter: boolean | undefined = undefined;
+    if (status === "pending") isCompletedFilter = false;
+    if (status === "completed") isCompletedFilter = true;
+
     const now = new Date();
     const startOfDay = new Date(
       now.getFullYear(),
@@ -133,9 +117,10 @@ class TaskRepository {
           gte: startOfDay,
           lte: endOfDay,
         },
+        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+        listId: null
       },
       orderBy: [{ dueDate: "asc" }, { id: "asc" }],
-      ...this.handleCursorPagination(cursor, limit),
       select: TaskRepository.TASK_SELECT,
     });
 
@@ -148,7 +133,11 @@ class TaskRepository {
     });
   }
 
-  async getUpcomingTasks(userId: number, cursor?: number, limit: number = 10) {
+  async getUpcomingTasks(userId: number, status?: "pending" | "completed" | "all") {
+    let isCompletedFilter: boolean | undefined = undefined;
+    if (status === "pending") isCompletedFilter = false;
+    if (status === "completed") isCompletedFilter = true;
+
     const startOfTomorrow = new Date();
     startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
     startOfTomorrow.setHours(0, 0, 0, 0);
@@ -161,16 +150,17 @@ class TaskRepository {
           gte: startOfTomorrow,
         },
         isCompleted: false,
+        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+        listId: null,
       },
       orderBy: [{ dueDate: "asc" }, { id: "asc" }],
-      ...this.handleCursorPagination(cursor, limit),
       select: TaskRepository.TASK_SELECT,
     });
 
     return tasks.map((task) => this.transformTask(task));
   }
 
-  async getOverdueTasks(userId: number, cursor?: number, limit: number = 10) {
+  async getOverdueTasks(userId: number) {
     const tasks = await prisma.task.findMany({
       where: {
         userId,
@@ -181,7 +171,60 @@ class TaskRepository {
         isCompleted: false,
       },
       orderBy: [{ dueDate: "asc" }, { id: "asc" }],
-      ...this.handleCursorPagination(cursor, limit),
+      select: TaskRepository.TASK_SELECT,
+    });
+
+    return tasks.map((task) => {
+      const transformed = this.transformTask(task);
+      return {
+        ...transformed,
+        isOverdue: this.checkIfOverdue(task as unknown as Task),
+      };
+    });
+  }
+
+  async getTasksByList(userId: number, listId: number, status?: "pending" | "completed" | "all") {
+    let isCompletedFilter: boolean | undefined = undefined;
+    if (status === "pending") isCompletedFilter = false;
+    if (status === "completed") isCompletedFilter = true;
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        userId,
+        listId,
+        deletedAt: null,
+        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+      },
+      orderBy: { id: "asc" },
+      select: TaskRepository.TASK_SELECT,
+    });
+
+    return tasks.map((task) => {
+      const transformed = this.transformTask(task);
+      return {
+        ...transformed,
+        isOverdue: this.checkIfOverdue(task as unknown as Task),
+      };
+    });
+  }
+
+  async getTasksByTag(userId: number, tagId: number, status?: "pending" | "completed" | "all") {
+    let isCompletedFilter: boolean | undefined = undefined;
+    if (status === "pending") isCompletedFilter = false;
+    if (status === "completed") isCompletedFilter = true;
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        userId,
+        tags: {
+          some: {
+            tagId,
+          },
+        },
+        deletedAt: null,
+        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+      },
+      orderBy: { id: "asc" },
       select: TaskRepository.TASK_SELECT,
     });
 
@@ -295,14 +338,13 @@ class TaskRepository {
     }
   }
 
-  async getAllTrashTasks(userId: number, cursor?: number, limit: number = 10) {
+  async getAllTrashTasks(userId: number) {
     const tasks = await prisma.task.findMany({
       where: {
         userId,
         deletedAt: { not: null },
       },
       orderBy: { id: "asc" },
-      ...this.handleCursorPagination(cursor, limit),
       select: TaskRepository.TASK_SELECT,
     });
 

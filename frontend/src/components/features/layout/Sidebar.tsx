@@ -34,13 +34,20 @@ export default function Sidebar() {
   const [isCreateTagOpen, setIsCreateTagOpen] = useState(false);
   const { isMobileSidebarOpen, setIsMobileSidebarOpen } = useUIStore();
 
-  const activeFilter =
+  const activeFilter = searchParams.get("filter");
+  const activeView = searchParams.get("view");
+  
+  const currentSelection =
     location.pathname === "/dashboard"
-      ? searchParams.get("filter") || "all"
+      ? activeView || activeFilter || "all"
       : "";
 
   async function handleFilterChange(id: string) {
     navigate(`/dashboard?filter=${id}`);
+  }
+
+  async function handleViewChange(viewType: string, id: string | number) {
+    navigate(`/dashboard?view=${viewType}=${id}`);
   }
 
   const navItems = [
@@ -69,12 +76,12 @@ export default function Sidebar() {
               setIsMobileSidebarOpen(false);
             }}
             className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-              activeFilter === item.id
+              currentSelection === item.id
                 ? "bg-primary text-on-primary shadow-sm"
                 : "text-on-surface-variant/70 hover:bg-surface-container-high"
             }`}
           >
-            <span className="material-symbols-outlined !text-[18px]" style={{ fontVariationSettings: activeFilter === item.id ? "'FILL' 1" : "'FILL' 0" }}>{item.icon}</span>
+            <span className="material-symbols-outlined !text-[18px]" style={{ fontVariationSettings: currentSelection === item.id ? "'FILL' 1" : "'FILL' 0" }}>{item.icon}</span>
             <span className="font-body text-xs">{item.label}</span>
           </Link>
         ))}
@@ -101,9 +108,9 @@ export default function Sidebar() {
               <ListItem
                 key={list.id}
                 list={list}
-                isActive={activeFilter === `list-${list.id}`}
+                isActive={currentSelection === `listid=${list.id}`}
                 onSelect={() => {
-                  handleFilterChange(`list-${list.id}`);
+                  handleViewChange("listid", list.id);
                   setIsMobileSidebarOpen(false);
                 }}
                 onDelete={() => deleteList(list.id)}
@@ -132,9 +139,9 @@ export default function Sidebar() {
               <TagItem
                 key={tag.id}
                 tag={tag}
-                isActive={activeFilter === `tag-${tag.id}`}
+                isActive={currentSelection === `tagid=${tag.id}`}
                 onSelect={() => {
-                  handleFilterChange(`tag-${tag.id}`);
+                  handleViewChange("tagid", tag.id);
                   setIsMobileSidebarOpen(false);
                 }}
                 onDelete={() => deleteTag(tag.id.toString())}
@@ -149,7 +156,7 @@ export default function Sidebar() {
         <div className="space-y-0.5">
           <Link
           className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
-            activeFilter === "completed"
+            currentSelection === "completed"
               ? "bg-secondary-container text-secondary"
               : "text-on-surface-variant/70 hover:bg-surface-container-high"
           }`}
@@ -160,12 +167,12 @@ export default function Sidebar() {
             setIsMobileSidebarOpen(false);
           }}
         >
-          <span className="material-symbols-outlined !text-[18px]" style={{ fontVariationSettings: activeFilter === "completed" ? "'FILL' 1" : "'FILL' 0" }}>task_alt</span>
+          <span className="material-symbols-outlined !text-[18px]" style={{ fontVariationSettings: currentSelection === "completed" ? "'FILL' 1" : "'FILL' 0" }}>task_alt</span>
           <span className="font-body text-xs">{t("common.completed")}</span>
         </Link>
         <Link
           className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
-            activeFilter === "trash"
+            currentSelection === "trash"
               ? "bg-error-container/40 text-error"
               : "text-on-surface-variant/70 hover:bg-surface-container-high hover:text-error"
           }`}
@@ -176,7 +183,7 @@ export default function Sidebar() {
             setIsMobileSidebarOpen(false);
           }}
         >
-          <span className="material-symbols-outlined !text-[18px]" style={{ fontVariationSettings: activeFilter === "trash" ? "'FILL' 1" : "'FILL' 0" }}>delete</span>
+          <span className="material-symbols-outlined !text-[18px]" style={{ fontVariationSettings: currentSelection === "trash" ? "'FILL' 1" : "'FILL' 0" }}>delete</span>
           <span className="font-body text-xs">{t("common.trash")}</span>
         </Link>
         </div>

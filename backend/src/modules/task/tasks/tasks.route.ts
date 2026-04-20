@@ -7,10 +7,11 @@ import subTasksRouter from "../subtasks/subtasks.route.js";
 import commentsRouter from "../comments/comments.route.js";
 import tryCatch from "../../../shared/utils/tryCatch.utils.js";
 import {
-  getAllTasksSchema,
   taskIdSchema,
   newTaskSchema,
   updateTaskSchema,
+  listIdSchema,
+  tagIdSchema,
 } from "./tasks.schema.js";
 
 const taskRepository = new TaskRepository();
@@ -23,18 +24,60 @@ TasksRouter.use("/:taskId/comments", commentsRouter);
 
 // tasks.route.ts
 TasksRouter.get(
-  "/",
-  validation(getAllTasksSchema),
-  tryCatch(tasksController.getAll),
+  "/pending",
+  tryCatch(tasksController.getPendingTasks),
+);
+
+TasksRouter.get(
+  "/completed",
+  tryCatch(tasksController.getCompletedTasks),
+);
+
+TasksRouter.get(
+  "/list/:listId",
+  validation(listIdSchema),
+  tryCatch(tasksController.getTasksByList),
+);
+
+TasksRouter.post(
+  "/list/:listId",
+  validation(listIdSchema),
+  validation(newTaskSchema),
+  tryCatch(tasksController.createTaskByList),
+);
+
+TasksRouter.get(
+  "/tag/:tagId",
+  validation(tagIdSchema),
+  tryCatch(tasksController.getTasksByTag),
+);
+
+TasksRouter.post(
+  "/tag/:tagId",
+  validation(tagIdSchema),
+  validation(newTaskSchema),
+  tryCatch(tasksController.createTaskByTag),
 );
 TasksRouter.get(
   "/today",
   tryCatch(tasksController.getTodayTasks),
 );
 
+TasksRouter.post(
+  "/today",
+  validation(newTaskSchema),
+  tryCatch(tasksController.createTodayTask),
+);
+
 TasksRouter.get(
   "/upcoming",
   tryCatch(tasksController.getUpcomingTasks),
+);
+
+TasksRouter.post(
+  "/upcoming",
+  validation(newTaskSchema),
+  tryCatch(tasksController.createUpcomingTask),
 );
 
 TasksRouter.get(

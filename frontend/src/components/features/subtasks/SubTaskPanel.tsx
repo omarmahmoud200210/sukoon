@@ -41,7 +41,6 @@ export default function SubTaskPanel() {
 
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
-  const { mutate: deleteTrashTask } = useDeleteTrashTask();
 
   const { data: overdueTasksData } = useOverdueTasks();
   const overdueTasks = Array.isArray(overdueTasksData) ? overdueTasksData : [];
@@ -136,7 +135,7 @@ export default function SubTaskPanel() {
             transition: { duration: 0.2 },
           }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full fixed inset-0 z-50 xl:static xl:w-[420px] xl:z-20 shrink-0 bg-surface-container-lowest/95 backdrop-blur-2xl flex flex-col h-[100dvh] xl:h-full border-s border-outline-variant/10"
+          className="w-full fixed inset-0 z-50 xl:relative xl:w-[420px] xl:z-20 shrink-0 bg-surface-container-lowest/95 backdrop-blur-2xl flex flex-col h-[100dvh] xl:h-full border-s border-outline-variant/10"
           style={{
             boxShadow: isRtl
               ? "8px 0 30px -15px rgba(0,0,0,0.12)"
@@ -161,7 +160,7 @@ export default function SubTaskPanel() {
                 mode="task"
                 currentName={currentTaskDetails?.title}
                 onDelete={() => {
-                  deleteTrashTask(currentTaskDetails.id);
+                  deleteTask(currentTaskDetails.id);
                   handleClose();
                 }}
               />
@@ -228,6 +227,7 @@ export default function SubTaskPanel() {
                 }
                 alwaysVisible
                 isOverdue={isOverdue}
+                position="left"
               />
 
               <PrioritySelect

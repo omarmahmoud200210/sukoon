@@ -26,18 +26,16 @@ export default function TaskDashboard() {
     <TaskBoard>
       {({
         filter,
-        tasks,
+        view,
+        pendingTasks,
+        completedTasks,
         trashTasks,
-        todayTasks,
-        upcomingTasks,
         isLoading,
-        hasNextPage,
         currentListId,
         currentTagId,
         placeholder,
         pageTitle,
         handleAddTask,
-        handleLoadMore,
       }) => (
         <motion.main
           variants={page}
@@ -104,15 +102,13 @@ export default function TaskDashboard() {
                 >
                   <TaskList
                     filter={filter}
-                    tasks={tasks}
+                    view={view}
+                    pendingTasks={pendingTasks}
+                    completedTasks={completedTasks}
                     trashTasks={trashTasks}
-                    todayTasks={todayTasks}
-                    upcomingTasks={upcomingTasks}
                     isLoading={isLoading}
-                    hasNextPage={hasNextPage}
                     currentListId={currentListId}
                     currentTagId={currentTagId}
-                    onLoadMore={handleLoadMore}
                   />
                 </motion.div>
               </AnimatePresence>

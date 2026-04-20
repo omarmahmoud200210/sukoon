@@ -7,28 +7,21 @@ import { useOverdueTasks } from "@/hooks/useTasks";
 
 interface TaskListProps {
   filter: string;
-  tasks: Task[];
+  view: string | null;
+  pendingTasks: Task[];
+  completedTasks: Task[];
   trashTasks: Task[];
-  todayTasks: Task[];
-  upcomingTasks: Task[];
   isLoading: boolean;
-  hasNextPage: boolean;
   currentListId?: string;
   currentTagId?: number;
-  onLoadMore: () => Promise<void>;
 }
 
 export default function TaskList({
   filter,
-  tasks,
+  pendingTasks,
+  completedTasks,
   trashTasks,
-  todayTasks,
-  upcomingTasks,
   isLoading,
-  hasNextPage,
-  currentListId,
-  currentTagId,
-  onLoadMore,
 }: TaskListProps) {
   const { t } = useTranslation();
 
@@ -43,69 +36,9 @@ export default function TaskList({
     [overdueTasksData],
   );
 
-  const pendingTasks = useMemo(
-    () =>
-      (tasks || [])
-        .filter((t) => t.isCompleted !== true)
-        .filter((t) => {
-          if (currentListId) return String(t.listId) === String(currentListId);
-          if (currentTagId)
-            return t.tags && t.tags.some((tag) => tag.id === currentTagId);
-          if (
-            filter === "all" ||
-            filter === "today" ||
-            filter === "next7days"
-          ) {
-            return !t.listId;
-          }
-          return true;
-        }),
-    [tasks, filter, currentListId, currentTagId],
-  );
-
-  const completedTasks = useMemo(
-    () =>
-      (tasks || [])
-        .filter((t) => t.isCompleted === true)
-        .filter((t) => {
-          if (currentListId) return String(t.listId) === String(currentListId);
-          if (currentTagId)
-            return t.tags && t.tags.some((tag) => tag.id === currentTagId);
-          if (filter === "all" || filter === "completed") {
-            return !t.listId;
-          }
-          return true;
-        }),
-    [tasks, filter, currentListId, currentTagId],
-  );
-
-  const showPending = useMemo(
-    () => filter === "all" || !!currentListId || filter.startsWith("tag-"),
-    [filter, currentListId],
-  );
-
-  const showCompleted = useMemo(
-    () =>
-      filter === "all" ||
-      filter === "completed" ||
-      !!currentListId ||
-      filter.startsWith("tag-"),
-    [filter, currentListId],
-  );
-
+  const showPending = filter !== "trash" && filter !== "completed";
+  const showCompleted = filter !== "trash";
   const showTrash = filter === "trash";
-
-  const showTodayTasks = filter === "today";
-  const showUpcomingTasks = filter === "next7days";
-
-  const filteredTodayTasks = useMemo(
-    () => (todayTasks || []).filter((t) => !t.listId),
-    [todayTasks],
-  );
-  const filteredUpcomingTasks = useMemo(
-    () => (upcomingTasks || []).filter((t) => !t.listId),
-    [upcomingTasks],
-  );
 
   if (isLoading) {
     return <TaskItemSkeleton />;
@@ -114,8 +47,6 @@ export default function TaskList({
   const isViewEmpty =
     (!showPending || pendingTasks.length === 0) &&
     (!showCompleted || completedTasks.length === 0) &&
-    (!showTodayTasks || filteredTodayTasks.length === 0) &&
-    (!showUpcomingTasks || filteredUpcomingTasks.length === 0) &&
     (!showTrash || !trashTasks || trashTasks.length === 0);
 
   if (isViewEmpty) {
@@ -156,8 +87,7 @@ export default function TaskList({
             isCompleted: true,
             defaultExpanded: true,
             mode: "completed",
-            handleLoadMore: hasNextPage ? onLoadMore : async () => {},
-            hasNextPage,
+            handleLoadMore: async () => {},
           }}
           overdueIds={overdueIds}
         />
@@ -171,34 +101,6 @@ export default function TaskList({
             count: (trashTasks || []).length,
             defaultExpanded: true,
             mode: "trash",
-            handleLoadMore: async () => {},
-          }}
-          overdueIds={overdueIds}
-        />
-      )}
-
-      {showTodayTasks && (
-        <TaskSection
-          taskSection={{
-            title: t("tasks.today"),
-            tasks: filteredTodayTasks,
-            count: filteredTodayTasks.length,
-            defaultExpanded: true,
-            mode: "today",
-            handleLoadMore: async () => {},
-          }}
-          overdueIds={overdueIds}
-        />
-      )}
-
-      {showUpcomingTasks && (
-        <TaskSection
-          taskSection={{
-            title: t("tasks.next7Days"),
-            tasks: filteredUpcomingTasks,
-            count: filteredUpcomingTasks.length,
-            defaultExpanded: true,
-            mode: "next7days",
             handleLoadMore: async () => {},
           }}
           overdueIds={overdueIds}

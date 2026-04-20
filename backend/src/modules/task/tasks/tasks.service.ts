@@ -1,93 +1,39 @@
 import TaskRepository from "./tasks.repository.js";
 import type {
-  PaginatedResponse,
   CreateTaskRequest,
   UpdateTaskRequest,
 } from "../../../types/api.types.js";
-import type { Task } from "@prisma/client";
+
 
 class TaskService {
   constructor(private taskRepository: TaskRepository) {}
 
-  private cursorPaginate(tasks: Task[], limit: number) {
-    const hasNextPage = tasks.length === limit;
-    const results = tasks;
-
-    return {
-      data: results,
-      nextCursor: hasNextPage ? results[results.length - 1]!.id : null,
-      hasNextPage,
-    };
+  async getAllCompletedTasks(userId: number) {
+    return await this.taskRepository.getAllCompletedTasks(userId);
   }
 
-  async getAllCompletedTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
-  ): Promise<PaginatedResponse<Task>> {
-    const tasks = await this.taskRepository.getAllCompletedTasks(
-      userId,
-      cursor,
-      limit,
-    );
-
-    return this.cursorPaginate(tasks, limit);
+  async getAllUncompletedTasks(userId: number) {
+    return await this.taskRepository.getAllUncompletedTasks(userId);
   }
 
-  async getAllUncompletedTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
-  ): Promise<PaginatedResponse<Task>> {
-    const tasks = await this.taskRepository.getAllUncompletedTasks(
-      userId,
-      cursor,
-      limit,
-    );
-
-    return this.cursorPaginate(tasks, limit);
+  async getTodaysTasks(userId: number, status?: "pending" | "completed" | "all") {
+    return await this.taskRepository.getTodaysTasks(userId, status);
   }
 
-  async getTodaysTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
-  ): Promise<PaginatedResponse<Task>> {
-    const tasks = await this.taskRepository.getTodaysTasks(
-      userId,
-      cursor,
-      limit,
-    );
-
-    return this.cursorPaginate(tasks, limit);
+  async getUpcomingTasks(userId: number, status?: "pending" | "completed" | "all") {
+    return await this.taskRepository.getUpcomingTasks(userId, status);
   }
 
-  async getUpcomingTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
-  ): Promise<PaginatedResponse<Task>> {
-    const tasks = await this.taskRepository.getUpcomingTasks(
-      userId,
-      cursor,
-      limit,
-    );
-
-    return this.cursorPaginate(tasks, limit);
+  async getOverdueTasks(userId: number) {
+    return await this.taskRepository.getOverdueTasks(userId);
   }
 
-  async getOverdueTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
-  ): Promise<PaginatedResponse<Task>> {
-    const tasks = await this.taskRepository.getOverdueTasks(
-      userId,
-      cursor,
-      limit,
-    );
+  async getTasksByList(userId: number, listId: number, status?: "pending" | "completed" | "all") {
+    return await this.taskRepository.getTasksByList(userId, listId, status);
+  }
 
-    return this.cursorPaginate(tasks, limit);
+  async getTasksByTag(userId: number, tagId: number, status?: "pending" | "completed" | "all") {
+    return await this.taskRepository.getTasksByTag(userId, tagId, status);
   }
 
   async getTaskById(id: string, userId: number) {
@@ -106,18 +52,8 @@ class TaskService {
     return await this.taskRepository.deleteTask(id, userId);
   }
 
-  async getAllTrashTasks(
-    userId: number,
-    cursor?: number,
-    limit: number = 10,
-  ): Promise<PaginatedResponse<Task>> {
-    const tasks = await this.taskRepository.getAllTrashTasks(
-      userId,
-      cursor,
-      limit,
-    );
-
-    return this.cursorPaginate(tasks, limit);
+  async getAllTrashTasks(userId: number) {
+    return await this.taskRepository.getAllTrashTasks(userId);
   }
 
   async deleteTrashTask(id: string, userId: number) {

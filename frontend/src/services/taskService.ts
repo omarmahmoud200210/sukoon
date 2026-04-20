@@ -3,22 +3,43 @@ import type { CreateTask, UpdateTask } from "@/types/tasks";
 
 const API_URL = "/tasks";
 
-const getAllTasks = async (cursor?: number, limit?: number) => {
-  const params = new URLSearchParams();
-  if (cursor) params.append("cursor", cursor.toString());
-  if (limit) params.append("limit", limit.toString());
-
-  const { data } = await api.get(`${API_URL}?${params.toString()}`);
+const getPendingTasks = async () => {
+  const { data } = await api.get(`${API_URL}/pending`);
   return data;
 };
 
-const getTodayTasks = async () => {
-  const { data } = await api.get(`${API_URL}/today`);
+const getCompletedTasks = async () => {
+  const { data } = await api.get(`${API_URL}/completed`);
   return data;
 };
 
-const getUpcomingTasks = async () => {
-  const { data } = await api.get(`${API_URL}/upcoming`);
+const getTasksByList = async (
+  listId: string | number,
+  status?: "pending" | "completed" | "all",
+) => {
+  const params = status ? `?status=${status}` : "";
+  const { data } = await api.get(`${API_URL}/list/${listId}${params}`);
+  return data;
+};
+
+const getTasksByTag = async (
+  tagId: string | number,
+  status?: "pending" | "completed" | "all",
+) => {
+  const params = status ? `?status=${status}` : "";
+  const { data } = await api.get(`${API_URL}/tag/${tagId}${params}`);
+  return data;
+};
+
+const getTodayTasks = async (status?: "pending" | "completed" | "all") => {
+  const params = status ? `?status=${status}` : "";
+  const { data } = await api.get(`${API_URL}/today${params}`);
+  return data;
+};
+
+const getUpcomingTasks = async (status?: "pending" | "completed" | "all") => {
+  const params = status ? `?status=${status}` : "";
+  const { data } = await api.get(`${API_URL}/upcoming${params}`);
   return data;
 };
 
@@ -33,6 +54,20 @@ const getTaskById = async (id: string) => {
 };
 
 const createTask = async (taskData: CreateTask) => {
+  if (taskData.listId) {
+    const { data } = await api.post(
+      `${API_URL}/list/${taskData.listId}`,
+      taskData,
+    );
+    return data;
+  }
+
+  if (taskData.tagIds && taskData.tagIds.length > 0) {
+    const primaryTagId = taskData.tagIds[0];
+    const { data } = await api.post(`${API_URL}/tag/${primaryTagId}`, taskData);
+    return data;
+  }
+
   const { data } = await api.post(API_URL, taskData);
   return data;
 };
@@ -62,13 +97,28 @@ const restoreTrashTask = async (id: string) => {
   return data;
 };
 
+const createTodayTask = async (taskData: CreateTask) => {
+  const { data } = await api.post(`${API_URL}/today`, taskData);
+  return data;
+};
+
+const createUpcomingTask = async (taskData: CreateTask) => {
+  const { data } = await api.post(`${API_URL}/upcoming`, taskData);
+  return data;
+};
+
 export {
-  getAllTasks,
+  getPendingTasks,
+  getCompletedTasks,
+  getTasksByList,
+  getTasksByTag,
   getTodayTasks,
   getUpcomingTasks,
   getOverdueTasks,
   getTaskById,
   createTask,
+  createTodayTask,
+  createUpcomingTask,
   updateTask,
   deleteTask,
   getTrashTasks,

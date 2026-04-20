@@ -36,14 +36,24 @@ const taskIdSchema = z.object({
   }),
 });
 
-// Schema for pagination
-const getAllTasksSchema = z.object({
-  query: z
-    .object({
-      cursor: z.string().regex(/^\d+$/).optional(),
-      limit: z.string().regex(/^\d+$/).optional(),
-    })
-    .optional(),
+// Schema for List ID
+const listIdSchema = z.object({
+  params: z.object({
+    listId: z.string().regex(/^\d+$/, "List ID must be numeric"),
+  }),
+  query: z.object({
+    status: z.enum(["pending", "completed", "all"]).optional(),
+  }).optional(),
 });
 
-export { newTaskSchema, updateTaskSchema, taskIdSchema, getAllTasksSchema };
+// Schema for Tag ID
+const tagIdSchema = z.object({
+  params: z.object({
+    tagId: z.string().regex(/^\d+$/, "Tag ID must be numeric"),
+  }),
+  query: z.object({
+    status: z.enum(["pending", "completed", "all"]).optional(),
+  }).optional(),
+});
+
+export { newTaskSchema, updateTaskSchema, taskIdSchema, listIdSchema, tagIdSchema };

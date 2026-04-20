@@ -5,6 +5,7 @@ export type CreateTask = {
   description?: string;
   listId?: string | number;
   tagIds?: number[];
+  dueDate?: string;
 };
 
 export type UpdateTask = {

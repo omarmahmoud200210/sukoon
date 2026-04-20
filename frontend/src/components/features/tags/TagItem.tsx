@@ -23,7 +23,7 @@ export default function TagItem({ tag, isActive, onSelect, onDelete }: TagItemPr
             ? "bg-secondary text-on-secondary shadow-sm"
             : "hover:bg-surface-container-high text-on-surface-variant"
         }`}
-        to={`/dashboard?filter=tag-${tag.id}`}
+        to={`/dashboard?view=tagid=${tag.id}`}
         onClick={(e) => {
           e.preventDefault();
           onSelect();
