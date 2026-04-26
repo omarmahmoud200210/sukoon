@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import {
   useUpdateTask,
   useDeleteTask,
-  useDeleteTrashTask,
   useOverdueTasks,
   useTask,
 } from "@/hooks/useTasks";
@@ -54,7 +53,7 @@ export default function SubTaskPanel() {
   const handleDateSelect = (taskId: string, date?: Date) => {
     updateTask({
       id: taskId,
-      data: { dueDate: date ? date.toISOString() : undefined },
+      data: { dueDate: date ? date.toISOString() : null },
     });
   };
 

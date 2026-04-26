@@ -41,14 +41,14 @@ api.interceptors.response.use(
         await api.post("/auth/refresh");
         return api(originalRequest);
       } catch (refreshError) {
-        const publicPages = [
-          "/login",
-          "/register",
-          "/",
-          "/verify-email",
-          "/reset-password",
-          "/forgot-password",
-        ];
+          const publicPages = [
+            "/login",
+            "/register",
+            "/",
+            "/verify-email",
+            "/reset-password",
+            "/forgot-password",
+          ];
         if (!publicPages.includes(window.location.pathname)) {
           window.location.href = "/login";
         }

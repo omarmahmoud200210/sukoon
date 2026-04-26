@@ -48,6 +48,16 @@ class SubTaskRepository {
       select: SubTaskRepository.SUBTASK_SELECT,
     });
   }
+
+  async areAllSubtasksCompleted(taskId: number): Promise<boolean> {
+    const subTasks = await prisma.subTask.findMany({
+      where: { taskId },
+      select: { isCompleted: true },
+    });
+    
+    if (subTasks.length === 0) return false;
+    return subTasks.every(st => st.isCompleted);
+  }
 }
 
 export default SubTaskRepository;

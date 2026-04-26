@@ -154,7 +154,10 @@ export const useTogglePausePomodoroSession = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.activeSession });
     },
-    onError: onPauseSessionError,
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.activeSession });
+      onPauseSessionError();
+    },
   });
 };
 

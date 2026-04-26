@@ -13,7 +13,8 @@
     "prisma --generate": "prisma generate",
     "prisma --migrate": "prisma migrate dev",
     "prisma --studio": "prisma studio",
-    "start": "node dist/src/server.js"
+    "start": "node dist/src/server.js",
+    "prisma --local": "set $env:DATABASE_URL=\"postgresql://postgres:819602510@localhost:8000/momentum\"; npx prisma studio"
   },
   "keywords": [],
   "author": "",

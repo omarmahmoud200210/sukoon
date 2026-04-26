@@ -104,7 +104,11 @@ export default function Timer({
               whileTap={{ scale: 0.95 }}
               className="w-9 h-9 rounded-full bg-on-primary text-primary flex items-center justify-center cursor-pointer shrink-0"
               onClick={() => {
-                start(currentDuration, activeTask?.id);
+                if (mode !== "work") {
+                  timerControls.startBreak(mode === "short_break" ? 5 : 15);
+                } else {
+                  start(currentDuration, activeTask?.id);
+                }
               }}
             >
               <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -164,9 +168,15 @@ export default function Timer({
 
         {activeTask && (
           <button
-            onClick={onClear}
+            onClick={() => {
+              if (isRunning || isPaused) {
+                setEndDialogOpen(true);
+              } else {
+                if (onClear) onClear();
+              }
+            }}
             className="p-1.5 hover:bg-on-primary/10 rounded-full transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer"
-            title={t("common.clear")}
+            title={isRunning || isPaused ? t("common.endSession") || "End Session" : t("common.clear")}
           >
             <X className="w-4 h-4" />
           </button>

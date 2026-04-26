@@ -12,6 +12,14 @@ import CreateDialog from "@/components/CreateDialog";
 import SessionEndDialog from "@/components/SessionEndDialog";
 import { useUIStore } from "@/store/uiStore";
 import { useTranslation } from "react-i18next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import SelectExistingTaskDialog from "./SelectExistingTaskDialog";
+import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import logger from "@/lib/logger";
@@ -22,6 +30,7 @@ export default function TimerList() {
   const { mutateAsync: updatePomodoroTask } = useUpdatePomodoroTask();
   const { mutateAsync: deletePomodoroTask } = useDeletePomodoroTask();
   const { t } = useTranslation();
+  const [isSelectExistingOpen, setIsSelectExistingOpen] = useState(false);
 
   const isCreateTaskOpen = useUIStore((s) => s.isCreateTaskOpen);
   const setIsCreateTaskOpen = useUIStore((s) => s.setIsCreateTaskOpen);
@@ -35,7 +44,7 @@ export default function TimerList() {
   const setSwitchDialogOpen = useUIStore((s) => s.setSwitchDialogOpen);
 
   const timerControls = useTimerControls();
-  const { start, pause, resume, reset, complete, isActive, timeLeft, activeSession } =
+  const { start, pause, resume, reset, complete, isActive, timeLeft, activeSession, mode } =
     timerControls;
 
   const activeTaskFromSession =
@@ -92,19 +101,44 @@ export default function TimerList() {
             </div>
           </div>
 
-          <button
-            className="w-7 h-7 rounded-full bg-surface-container-highest/40 text-secondary hover:bg-surface-container-highest/60 flex items-center justify-center cursor-pointer transition-colors"
-            onClick={() => setIsCreateTaskOpen(true)}
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-7 h-7 rounded-full bg-surface-container-highest/40 text-secondary hover:bg-surface-container-highest/60 flex items-center justify-center cursor-pointer transition-colors outline-none">
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-surface border-outline-variant/20 rounded-xl p-1 shadow-lg font-body"
+            >
+              <DropdownMenuItem
+                className="cursor-pointer text-xs font-medium px-3 py-2.5 rounded-lg focus:bg-surface-container-highest/50"
+                onClick={() => setIsCreateTaskOpen(true)}
+              >
+                <span className="material-symbols-outlined text-[16px]! mr-2 opacity-70">
+                  add
+                </span>
+                {t("timer.createTask") || "Create new"}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer text-xs font-medium px-3 py-2.5 rounded-lg focus:bg-surface-container-highest/50"
+                onClick={() => setIsSelectExistingOpen(true)}
+              >
+                <span className="material-symbols-outlined text-[16px]! mr-2 opacity-70">
+                  list
+                </span>
+                {t("timer.selectExistingTask") || "Choose from existing"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex flex-col gap-0 flex-1 overflow-y-auto pr-2 pb-4 scrollbar-thin">
           {(() => {
-            const filteredTasks = tasks?.filter((task) =>
-              activeTab === "archived" ? task.isArchived : !task.isArchived,
-            ) || [];
+            const filteredTasks =
+              tasks?.filter((task) =>
+                activeTab === "archived" ? task.isArchived : !task.isArchived,
+              ) || [];
 
             if (isLoadingTasks) {
               return (
@@ -161,14 +195,16 @@ export default function TimerList() {
                     {activeTab === "archived" ? "archive" : "timer"}
                   </span>
                   <p className="text-[10px] font-medium text-secondary/40 uppercase tracking-widest">
-                    {activeTab === "archived" ? t("timer.noArchivedTasks") : t("timer.noActiveTasks")}
+                    {activeTab === "archived"
+                      ? t("timer.noArchivedTasks")
+                      : t("timer.noActiveTasks")}
                   </p>
                 </div>
               );
             }
 
             return filteredTasks.map((task) => {
-              const isTaskRunning = currentActiveTask?.id === task.id;
+              const isTaskRunning = currentActiveTask?.id === task.id && mode === "work";
 
               return (
                 <TimerTaskItem
@@ -208,7 +244,10 @@ export default function TimerList() {
                               isArchived: true,
                             });
                           } catch (err) {
-                            logger.error("Failed to archive pomodoro task", err);
+                            logger.error(
+                              "Failed to archive pomodoro task",
+                              err,
+                            );
                           }
                         }
                   }
@@ -276,6 +315,20 @@ export default function TimerList() {
         onSwitch={() => {
           reset();
           startNewTask();
+        }}
+      />
+      <SelectExistingTaskDialog
+        isOpen={isSelectExistingOpen}
+        onClose={() => setIsSelectExistingOpen(false)}
+        onSelect={async (task) => {
+          try {
+            await createPomodoroTask({
+              title: task.title,
+              duration: task.duration || 25,
+            });
+          } catch (err) {
+            logger.error("Failed to create pomodoro task", err);
+          }
         }}
       />
     </div>

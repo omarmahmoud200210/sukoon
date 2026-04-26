@@ -4,7 +4,6 @@ import type { PomodoroTask } from "@/types/timer";
 export type TimerMode = "work" | "short_break" | "long_break";
 
 export interface TimerUIStates {
-  // Timer Engine
   isActive: boolean;
   setIsActive: (isActive: boolean) => void;
   timeLeft: number;
@@ -12,13 +11,11 @@ export interface TimerUIStates {
   mode: TimerMode;
   setMode: (mode: TimerMode) => void;
 
-  // Task Selection
   manualActiveTask: PomodoroTask | null | undefined;
   setManualActiveTask: (task: PomodoroTask | null | undefined) => void;
   pendingSwitchTask: PomodoroTask | null;
   setPendingSwitchTask: (task: PomodoroTask | null) => void;
 
-  // Dialog Visibility
   isCreateTaskOpen: boolean;
   setIsCreateTaskOpen: (isOpen: boolean) => void;
   switchDialogOpen: boolean;
@@ -26,12 +23,13 @@ export interface TimerUIStates {
   endDialogOpen: boolean;
   setEndDialogOpen: (isOpen: boolean) => void;
 
-  // Tab
   activeTab: "active" | "archived";
   setActiveTab: (tab: "active" | "archived") => void;
 
   endTimestamp: number | null;
   setEndTimestamp: (ts: number | null) => void;
+  isTimerFinishedNaturally: boolean;
+  setIsTimerFinishedNaturally: (isFinished: boolean) => void;
 }
 
 export const createTimerSlice: StateCreator<TimerUIStates> = (set) => ({
@@ -65,4 +63,7 @@ export const createTimerSlice: StateCreator<TimerUIStates> = (set) => ({
 
   endTimestamp: null,
   setEndTimestamp: (ts: number | null) => set({ endTimestamp: ts }),
+
+  isTimerFinishedNaturally: false,
+  setIsTimerFinishedNaturally: (isFinished: boolean) => set({ isTimerFinishedNaturally: isFinished }),
 });

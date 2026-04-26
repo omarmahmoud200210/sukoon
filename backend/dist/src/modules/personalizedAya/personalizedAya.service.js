@@ -15,7 +15,7 @@ class PersonalizedAyaService {
     }
     async personalizedAyaWithAI(userId) {
         const allTafreeghs = await new TafreeghRepository().recentTafreeghs(userId);
-        if (allTafreeghs.length === 0)
+        if (allTafreeghs.length < 2)
             return;
         const tafreeghEntries = allTafreeghs.map((t) => ({
             date: t.createdAt.toISOString().split("T")[0],

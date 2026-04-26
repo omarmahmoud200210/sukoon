@@ -23,7 +23,7 @@ const updateTaskSchema = z.object({
     description: z.string().optional(),
     isCompleted: z.boolean().optional(),
     priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
-    dueDate: z.string().datetime().optional(),
+    dueDate: z.string().datetime().nullable().optional(),
     tagIds: z.array(z.number()).optional(),
     position: z.number().optional(),
   }),

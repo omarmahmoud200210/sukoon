@@ -16,21 +16,32 @@ class AuthenticationController {
             setCookies(res, userLogin.tokens?.accessToken, userLogin.tokens?.refreshToken, rememberMe);
             return res.status(200).json(userLogin.user);
         }
-        throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
+        throw AppError.Unauthorized(userLogin.message || AuthErrorCode.INVALID_CREDENTIALS);
     };
     getUserData = async (req, res) => {
         const user = await this.authServices.getUser(req.user.id);
         return res.status(200).json(user);
     };
     register = async (req, res) => {
-        const data = await this.authServices.register(req.body);
+        const userData = {
+            email: req.body.email,
+            password: req.body.password,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+        };
+        const data = await this.authServices.register(userData);
         if (data)
             return res.status(200).json(data);
         throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
     };
     logout = (_req, res) => {
-        res.clearCookie("access_token");
-        res.clearCookie("refresh_token");
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+        };
+        res.clearCookie("access_token", cookieOptions);
+        res.clearCookie("refresh_token", cookieOptions);
         return res.status(200).json({ message: "Logged out successfully" });
     };
     refreshToken = async (req, res) => {

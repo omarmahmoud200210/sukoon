@@ -12,7 +12,7 @@ export type UpdateTask = {
   title?: string;
   description?: string;
   priority?: string;
-  dueDate?: string;
+  dueDate?: string | null;
   isCompleted?: boolean;
   tagIds?: number[];
   listId?: string | number;

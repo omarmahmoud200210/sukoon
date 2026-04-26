@@ -19,25 +19,25 @@ import quoteRouter from "./modules/quranAya/quranAya.route.js";
 import tafreeghRouter from "./modules/tafreegh/tafreegh.route.js";
 import personalizedAyaRouter from "./modules/personalizedAya/personalizedAya.route.js";
 import adminRouter from "./modules/admin/admin.route.js";
-import { personalizedQuranAyaCronJob, quranAyaCronJob, splittingSessionsCronJob, } from "./shared/jobs/cron-jobs.js";
+import cronRouter from "./modules/cron/cron.route.js";
 import { AppError } from "./shared/middleware/error.js";
 export class App {
     app;
     constructor() {
         this.app = express();
+        this.app.set("trust proxy", 1);
         dotenv.config();
         this.initializeMiddleware();
         this.initializeRoutes();
-        this.initializeCronJobs();
     }
     initializeMiddleware() {
+        this.app.use(cors({
+            origin: process.env.FRONTEND_URL,
+            credentials: true,
+        }));
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(cookieParser());
-        this.app.use(cors({
-            origin: "https://localhost:5173",
-            credentials: true,
-        }));
         this.app.use(helmet());
         this.app.use(passport.initialize());
         this.app.use(morgan("dev"));
@@ -53,6 +53,7 @@ export class App {
         this.app.use("/api/v1/tafreegh", checkAuth, tafreeghRouter);
         this.app.use("/api/v1/personalized-aya", checkAuth, personalizedAyaRouter);
         this.app.use("/api/v1/admin", checkAuth, adminRouter);
+        this.app.use("/api/v1/cron", cronRouter);
         this.initializeErrorHandling();
     }
     initializeErrorHandling() {
@@ -81,18 +82,6 @@ export class App {
                     err instanceof Error && { stack: err.stack }),
             });
         });
-    }
-    initializeCronJobs() {
-        splittingSessionsCronJob();
-        quranAyaCronJob();
-        // Defer async cron job to next tick to avoid blocking startup
-        setTimeout(() => {
-            personalizedQuranAyaCronJob().catch((err) => {
-                logger.error("[CRON] Failed to initialize personalized Quran Aya job", {
-                    error: err,
-                });
-            });
-        }, 0);
     }
 }
 export default App;

@@ -6,6 +6,7 @@ import { AppError } from "../../shared/middleware/error.js";
 import AuthRepository from "./auth.repositorty.js";
 import { AuthErrorCode } from "../../shared/constants/enums.js";
 import uploadImage from "../../shared/utils/upload.utils.js";
+import logger from "../../shared/utils/logger.js";
 class AuthenticationServices {
     authRepository;
     constructor(authRepository) {
@@ -14,11 +15,11 @@ class AuthenticationServices {
     login = async (email, password) => {
         const user = await this.authRepository.login(email);
         if (!user)
-            throw new Error("The User Not Exist");
+            throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
         if (user?.isVerified) {
             const verifyPassword = await argon2.verify(user.passwordHashed, password);
             if (!verifyPassword)
-                throw new Error("Invalid password");
+                throw AppError.Unauthorized(AuthErrorCode.INVALID_CREDENTIALS);
             return {
                 tokens: generateTokens(user.id),
                 status: user.isVerified,
@@ -60,15 +61,14 @@ class AuthenticationServices {
         const password_hash = await argon2.hash(password);
         const newUser = await this.authRepository.register(userData, password_hash);
         const verifyEmailToken = generateVerificationToken(newUser.id);
-        await sendEmail({
-            to: userData.email,
-            subject: "Verify Email",
-            text: `Verify your email by clicking this link: ${process.env.FRONTEND_URL}/verify-email?token=${verifyEmailToken}`,
-            html: `
-        <h1>Verify Email</h1>
-        <p>Verify your email by clicking this link: <a href="${process.env.FRONTEND_URL}/verify-email?token=${verifyEmailToken}">Verify Email</a></p>
-      `,
-        });
+        try {
+            await sendEmail(userData.email, verifyEmailToken);
+        }
+        catch (error) {
+            logger.error(error);
+            await this.authRepository.deleteAccount(newUser.id);
+            throw AppError.InternalServerError("Failed to send verification email. Please check your email configuration and try again.");
+        }
         return {
             email: newUser.email,
             message: "User is Registered but still not verified!!",
@@ -79,15 +79,7 @@ class AuthenticationServices {
         if (!user || !user.isVerified)
             return { success: true };
         const accessToken = generateForgotPasswordToken(user.id);
-        await sendEmail({
-            to: email,
-            subject: "Reset Password",
-            text: `Reset your password by clicking this link: ${process.env.FRONTEND_URL}/reset-password?token=${accessToken}`,
-            html: `
-        <h1>Reset Password</h1>
-        <p>Reset your password by clicking this link: <a href="${process.env.FRONTEND_URL}/reset-password?token=${accessToken}">Reset Password</a></p>
-      `,
-        });
+        await sendEmail(email, accessToken);
         return { success: true };
     };
     resetPassword = async (token, password) => {
@@ -105,7 +97,7 @@ class AuthenticationServices {
     verifyEmail = async (token) => {
         const verifyToken = jwt.verify(token, process.env.JWT_VERIFICATION_TOKEN);
         if (!verifyToken)
-            throw new Error("Invalid token");
+            throw AppError.Unauthorized(AuthErrorCode.TOKEN_INVALID);
         const payload = verifyToken;
         const user = await this.authRepository.getUser(Number(payload.id));
         if (!user)

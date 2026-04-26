@@ -4,35 +4,26 @@ class TaskService {
     constructor(taskRepository) {
         this.taskRepository = taskRepository;
     }
-    cursorPaginate(tasks, limit) {
-        const hasNextPage = tasks.length > limit;
-        const results = hasNextPage ? tasks.slice(0, limit) : tasks;
-        const nextCursor = hasNextPage ? results[results.length - 1].id : null;
-        return {
-            data: results,
-            nextCursor,
-            hasNextPage,
-        };
+    async getAllCompletedTasks(userId) {
+        return await this.taskRepository.getAllCompletedTasks(userId);
     }
-    async getAllCompletedTasks(userId, cursor, limit = 10) {
-        const tasks = await this.taskRepository.getAllCompletedTasks(userId, cursor, limit);
-        return this.cursorPaginate(tasks, limit);
+    async getAllUncompletedTasks(userId) {
+        return await this.taskRepository.getAllUncompletedTasks(userId);
     }
-    async getAllUncompletedTasks(userId, cursor, limit = 10) {
-        const tasks = await this.taskRepository.getAllUncompletedTasks(userId, cursor, limit);
-        return this.cursorPaginate(tasks, limit);
+    async getTodaysTasks(userId, status) {
+        return await this.taskRepository.getTodaysTasks(userId, status);
     }
-    async getTodaysTasks(userId, cursor, limit = 10) {
-        const tasks = await this.taskRepository.getTodaysTasks(userId, cursor, limit);
-        return this.cursorPaginate(tasks, limit);
+    async getUpcomingTasks(userId, status) {
+        return await this.taskRepository.getUpcomingTasks(userId, status);
     }
-    async getUpcomingTasks(userId, cursor, limit = 10) {
-        const tasks = await this.taskRepository.getUpcomingTasks(userId, cursor, limit);
-        return this.cursorPaginate(tasks, limit);
+    async getOverdueTasks(userId) {
+        return await this.taskRepository.getOverdueTasks(userId);
     }
-    async getOverdueTasks(userId, cursor, limit = 10) {
-        const tasks = await this.taskRepository.getOverdueTasks(userId, cursor, limit);
-        return this.cursorPaginate(tasks, limit);
+    async getTasksByList(userId, listId, status) {
+        return await this.taskRepository.getTasksByList(userId, listId, status);
+    }
+    async getTasksByTag(userId, tagId, status) {
+        return await this.taskRepository.getTasksByTag(userId, tagId, status);
     }
     async getTaskById(id, userId) {
         return await this.taskRepository.getTaskById(id, userId);
@@ -46,9 +37,8 @@ class TaskService {
     async deleteTask(id, userId) {
         return await this.taskRepository.deleteTask(id, userId);
     }
-    async getAllTrashTasks(userId, cursor, limit = 10) {
-        const tasks = await this.taskRepository.getAllTrashTasks(userId, cursor, limit);
-        return this.cursorPaginate(tasks, limit);
+    async getAllTrashTasks(userId) {
+        return await this.taskRepository.getAllTrashTasks(userId);
     }
     async deleteTrashTask(id, userId) {
         return await this.taskRepository.deleteTrashTask(id, userId);

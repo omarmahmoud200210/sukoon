@@ -23,6 +23,7 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
   const { t } = useTranslation();
 
   const isCompleted = task.isCompleted;
+  const isHighPriority = task.priority === "HIGH" && !isCompleted;
 
   const { mutate: updateTask } = useUpdateTask();
   const { mutate: deleteTask } = useDeleteTask();
@@ -46,16 +47,17 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
     }
   }
 
-  const handleDateSelect = (taskId: string, date?: Date) => {
+  const handleDateSelect = (taskId: string, date?: Date | null) => {
     updateTask({
       id: taskId,
-      data: { dueDate: date ? date.toISOString() : undefined },
+      data: { dueDate: date ? date.toISOString() : null },
     });
   };
 
   const tagLength = 2;
 
-  const baseClasses = "relative flex items-center gap-4 p-3 border-b border-b-outline-variant/10 transition-all duration-200 cursor-pointer";
+  const priorityClasses = isHighPriority ? "border border-error/50 rounded-xl shadow-sm mb-1" : "border-b border-b-outline-variant/10";
+  const baseClasses = `relative flex items-center gap-4 p-3 transition-all duration-200 cursor-pointer ${priorityClasses}`;
 
   const stateClasses = isCompleted
     ? "bg-transparent shadow-none text-on-surface-variant/50"
@@ -77,6 +79,8 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
         className={`cursor-pointer w-5 h-5 rounded-[0.5rem] border-[1.5px] flex items-center justify-center transition-all shrink-0 ${
           isCompleted
             ? "bg-primary border-primary text-on-primary"
+            : isHighPriority
+            ? "border-error hover:bg-error/10"
             : "border-outline-variant/30 hover:border-primary group-hover:border-primary"
         }`}
         aria-label={isCompleted ? t("tasks.mark_incomplete") : t("tasks.mark_complete")}
@@ -90,6 +94,8 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
         className={`text-sm flex-1 truncate transition-all duration-200 font-body ${
           isCompleted
             ? "text-on-surface-variant/30 line-through"
+            : isHighPriority
+            ? "text-error font-bold"
             : "text-on-surface font-medium"
         }`}
       >

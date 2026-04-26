@@ -1,6 +1,7 @@
 import PomodoroSessionsRepository from "./pomodoro-sessions.repository.js";
 import type { PomodoroSession } from "@prisma/client";
 import logger from "../../../shared/utils/logger.js";
+import { AppError } from "../../../shared/middleware/error.js";
 
 class PomodoroSessionsService {
   constructor(private pomodoroSessionsRepository: PomodoroSessionsRepository) {}
@@ -17,7 +18,7 @@ class PomodoroSessionsService {
       await this.pomodoroSessionsRepository.getActiveSession(userId);
 
     if (activeSession) {
-      throw new Error("You already have an active session");
+      throw AppError.BadRequest("You already have an active session");
     }
 
     const finalSessionCount =
@@ -50,7 +51,7 @@ class PomodoroSessionsService {
       await this.pomodoroSessionsRepository.getActiveSession(userId);
 
     if (!activeSession) {
-      throw new Error("No active session found");
+      throw AppError.NotFound("No active session found");
     }
 
     if (!activeSession.isPaused) {
@@ -84,11 +85,11 @@ class PomodoroSessionsService {
       await this.pomodoroSessionsRepository.getActiveSession(userId);
 
     if (!activeSession) {
-      throw new Error("No active session found");
+      throw AppError.NotFound("No active session found");
     }
 
     if (activeSession.isCompleted) {
-      throw new Error("Session is already completed");
+      throw AppError.BadRequest("Session is already completed");
     }
 
     return this.pomodoroSessionsRepository.updateSession(
@@ -103,7 +104,7 @@ class PomodoroSessionsService {
       await this.pomodoroSessionsRepository.getActiveSession(userId);
 
     if (!activeSession) {
-      throw new Error("No active session found");
+      throw AppError.NotFound("No active session found");
     }
 
     return this.pomodoroSessionsRepository.deleteSession(

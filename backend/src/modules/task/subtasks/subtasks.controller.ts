@@ -21,10 +21,12 @@ class SubTasksController {
   update: RequestHandler = async (req, res) => {
     const { taskId, subTaskId } = req.params;
     const { title, isCompleted } = req.body;
+    const userId = req.user!.id;
     const subTask = await this.subTaskService.updateSubTask(
       Number(subTaskId),
       { title, isCompleted },
       Number(taskId),
+      userId,
     );
     return res.status(200).json(subTask);
   };

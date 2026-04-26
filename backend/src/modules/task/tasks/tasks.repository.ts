@@ -161,12 +161,15 @@ class TaskRepository {
   }
 
   async getOverdueTasks(userId: number) {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const tasks = await prisma.task.findMany({
       where: {
         userId,
         deletedAt: null,
         dueDate: {
-          lt: new Date(),
+          lt: startOfToday,
         },
         isCompleted: false,
       },
@@ -239,7 +242,9 @@ class TaskRepository {
 
   private checkIfOverdue(task: Task): boolean {
     if (task.isCompleted || !task.dueDate) return false;
-    return new Date(task.dueDate) < new Date();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return new Date(task.dueDate) < startOfToday;
   }
 
   async getTaskById(id: string, userId: number) {

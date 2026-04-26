@@ -32,23 +32,24 @@ export default function useTimerControls() {
 
   const endTimestamp = useUIStore((s) => s.endTimestamp);
   const setEndTimestamp = useUIStore((s) => s.setEndTimestamp);
-
   const prevSessionIdRef = useRef<string | number | undefined>(
     activeSession?.id,
   );
-
   const sessionCount = activeSession?.sessionCount ?? 0;
-
   const queryClient = useQueryClient();
+  const manualActiveTask = useUIStore((s) => s.manualActiveTask);
+
+  const setIsTimerFinishedNaturally = useUIStore((s) => s.setIsTimerFinishedNaturally);
 
   const onComplete = useCallback(() => {
     timerWorker.postMessage({ type: "stop" });
     setEndTimestamp(null);
 
     setIsActive(false);
-    completeSession.mutate();
 
     if (mode === "work") {
+      completeSession.mutate();
+
       const nextSessionCount = sessionCount + 1;
 
       if (nextSessionCount % 4 === 0) {
@@ -58,39 +59,41 @@ export default function useTimerControls() {
         setMode("short_break");
         setTimeLeft(5 * 60);
       }
+
+      queryClient.invalidateQueries({
+        queryKey: pomodoroTasksKeys.taskStatistics(
+          String(activeSession?.taskId),
+        ),
+      });
+      queryClient.invalidateQueries({ queryKey: pomodoroTasksKeys.statistics });
+      queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.history });
+      queryClient.invalidateQueries({
+        queryKey: pomodoroSessionsKeys.activeSession,
+      });
+      queryClient.invalidateQueries({
+        queryKey: pomodoroTasksKeys.taskStatistics(
+          String(activeSession?.pomodoroTaskId),
+        ),
+      });
     } else {
       setMode("work");
-      setTimeLeft(25 * 60);
+      const taskDuration = manualActiveTask?.duration ?? 25;
+      setTimeLeft(taskDuration * 60);
     }
-
-    const taskId = activeSession?.pomodoroTaskId || activeSession?.taskId;
-
-    if (taskId) {
-      queryClient.invalidateQueries({
-        queryKey: pomodoroTasksKeys.taskStatistics(String(taskId)),
-      });
-    }
-
-    queryClient.invalidateQueries({ queryKey: pomodoroTasksKeys.statistics });
-    queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.history });
-    queryClient.invalidateQueries({
-      queryKey: pomodoroSessionsKeys.activeSession,
-    });
-    queryClient.invalidateQueries({
-      queryKey: pomodoroTasksKeys.taskStatistics(
-        String(activeSession?.pomodoroTaskId),
-      ),
-    });
+    
+    setIsTimerFinishedNaturally(true);
   }, [
     mode,
     sessionCount,
     queryClient,
     activeSession,
     completeSession,
+    manualActiveTask,
     setIsActive,
     setMode,
     setTimeLeft,
     setEndTimestamp,
+    setIsTimerFinishedNaturally,
   ]);
 
   function triggerSessionCompleteAlert(title: string, body: string) {
@@ -226,8 +229,16 @@ export default function useTimerControls() {
     onComplete();
   };
 
+  const startBreak = (durationInMinutes: number) => {
+    setIsActive(true);
+    const durationInSeconds = durationInMinutes * 60;
+    setEndTimestamp(Date.now() + durationInSeconds * 1000);
+    setTimeLeft(durationInSeconds);
+  };
+
   return {
     start,
+    startBreak,
     pause,
     reset,
     resume,

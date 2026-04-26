@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Subtasks } from "@/types/tasks";
 import { useSubtaskEditor } from "@/hooks/useSubtaskEditor";
 import { useTaskEditor } from "@/hooks/useTaskEditor";
@@ -28,6 +28,7 @@ export default function SubTaskItem() {
   const { mutateAsync: updateSubtaskMutation } = useUpdateSubtask();
   const { mutateAsync: deleteSubtaskMutation } = useDeleteSubtask();
 
+  const [editingTitles, setEditingTitles] = useState<Record<string, string>>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleAddSubtask = async () => {
@@ -60,6 +61,8 @@ export default function SubTaskItem() {
     subTaskId: string,
     isCompleted: boolean
   ) => {
+    setEditingTitles(prev => ({ ...prev, [subTaskId]: title }));
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -74,6 +77,14 @@ export default function SubTaskItem() {
         });
       }
     }, 1500);
+  };
+
+  const handleBlurSubtaskTitle = (subTaskId: string) => {
+    setEditingTitles(prev => {
+      const newState = { ...prev };
+      delete newState[subTaskId];
+      return newState;
+    });
   };
 
   const handleDeleteSubtask = async (subTaskId: string) => {
@@ -126,13 +137,18 @@ export default function SubTaskItem() {
                 </span>
               )}
             </button>
-            <input
-              className={`text-xs flex-1 bg-transparent outline-none transition-all duration-500 font-body ${
+            <textarea
+              rows={1}
+              className={`text-xs flex-1 bg-transparent outline-none transition-all duration-500 font-body resize-none overflow-hidden py-1 ${
                 subTask.isCompleted
                   ? "text-on-surface-variant/30 line-through"
                   : "text-on-surface"
               }`}
-              value={subTask.title}
+              value={editingTitles[subTask.id] ?? subTask.title}
+              onInput={(e) => {
+                e.currentTarget.style.height = "auto";
+                e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+              }}
               onChange={(e) =>
                 handleChangeSubtaskTitle(
                   e.target.value,
@@ -140,6 +156,14 @@ export default function SubTaskItem() {
                   subTask.isCompleted,
                 )
               }
+              onBlur={() => handleBlurSubtaskTitle(subTask.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  e.currentTarget.blur();
+                  setIsAddingSubtask(true);
+                }
+              }}
             />
             <button
               onClick={() => handleDeleteSubtask(subTask.id)}
