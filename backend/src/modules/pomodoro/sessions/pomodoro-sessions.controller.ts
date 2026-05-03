@@ -33,6 +33,13 @@ class PomodoroSessionsController {
     return res.status(200).json(session);
   };
 
+  endAndSave: RequestHandler = async (req, res) => {
+    const userId = req.user!.id;
+    const { id, duration, endedAt } = req.body;
+    const session = await this.pomodoroSessionsService.endAndSaveSession(userId, id, duration, new Date(endedAt));
+    return res.status(200).json(session);
+  };
+
   reset: RequestHandler = async (req, res) => {
     const userId = req.user!.id;
     await this.pomodoroSessionsService.resetSession(userId);

@@ -31,6 +31,7 @@ try {
     server = https.createServer(options, appInstance.app);
     server.listen(PORT, () => {
       logger.info(`HTTPS Server is running on https://localhost:${PORT}`);
+      logger.info(`running using ${certPath}, ${keyPath}`);
     });
   } else {
     server = http.createServer(appInstance.app);

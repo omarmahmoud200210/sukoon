@@ -107,6 +107,25 @@ class PomodoroSessionsService {
     );
   }
 
+  async endAndSaveSession(userId: number, sessionId: number, duration: number, endedAt: Date) {
+    const activeSession =
+      await this.pomodoroSessionsRepository.getActiveSession(userId);
+
+    if (!activeSession || activeSession.id !== sessionId) {
+      throw AppError.NotFound("Active session not found or ID mismatch");
+    }
+
+    if (activeSession.isCompleted) {
+      throw AppError.BadRequest("Session is already completed");
+    }
+
+    return this.pomodoroSessionsRepository.updateSession(
+      activeSession.id,
+      userId,
+      { isCompleted: true, duration, endedAt },
+    );
+  }
+
   async resetSession(userId: number) {
     const activeSession =
       await this.pomodoroSessionsRepository.getActiveSession(userId);

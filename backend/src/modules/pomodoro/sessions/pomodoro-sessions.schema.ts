@@ -11,3 +11,11 @@ export const startSessionSchema = z.object({
     sessionCount: z.number().optional(),
   })
 });
+
+export const endAndSaveSessionSchema = z.object({
+  body: z.object({
+    id: z.number(),
+    duration: z.number().min(1, "Duration must be at least 1 minute"),
+    endedAt: z.number(),
+  })
+});

@@ -5,6 +5,7 @@ import PomodoroSessionsController from "./pomodoro-sessions.controller.js";
 import validation from "../../../shared/middleware/validation.js";
 import {
   startSessionSchema,
+  endAndSaveSessionSchema,
 } from "./pomodoro-sessions.schema.js";
 import tryCatch from "../../../shared/utils/tryCatch.utils.js";
 
@@ -30,6 +31,11 @@ pomodoroSessionsRouter.patch(
 pomodoroSessionsRouter.patch(
   "/complete",
   tryCatch(pomodoroSessionsController.complete),
+);
+pomodoroSessionsRouter.patch(
+  "/end-and-save",
+  validation(endAndSaveSessionSchema),
+  tryCatch(pomodoroSessionsController.endAndSave),
 );
 pomodoroSessionsRouter.delete(
   "/reset",
