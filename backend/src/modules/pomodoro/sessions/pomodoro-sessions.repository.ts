@@ -1,4 +1,7 @@
 import prisma from "../../../shared/database/prisma.js";
+import { Prisma } from "@prisma/client";
+
+type PrismaTx = Prisma.TransactionClient;
 
 class PomodoroSessionsRepository {
   private static readonly SESSION_SELECT = {
@@ -45,8 +48,11 @@ class PomodoroSessionsRepository {
     });
   }
 
-  async getActiveSession(userId: number) {
-    return await prisma.pomodoroSession.findFirst({
+  async getActiveSession(
+    userId: number,
+    tx: PrismaTx | typeof prisma = prisma,
+  ) {
+    return await tx.pomodoroSession.findFirst({
       where: {
         userId,
         isCompleted: false,
@@ -74,11 +80,12 @@ class PomodoroSessionsRepository {
     pomodoroTaskId?: number,
     sessionCount: number = 0,
     timezoneOffset?: number,
+    tx: PrismaTx | typeof prisma = prisma,
   ) {
     const startedAt = new Date();
     const endedAt = new Date(startedAt.getTime() + duration * 60 * 1000);
 
-    return await prisma.pomodoroSession.create({
+    return await tx.pomodoroSession.create({
       data: {
         userId,
         taskId: taskId ?? null,
@@ -103,8 +110,9 @@ class PomodoroSessionsRepository {
       endedAt?: Date;
       duration?: number;
     },
+    tx: PrismaTx | typeof prisma = prisma,
   ) {
-    return await prisma.pomodoroSession.update({
+    return await tx.pomodoroSession.update({
       where: { id, userId },
       data,
       select: PomodoroSessionsRepository.SESSION_SELECT,
@@ -141,7 +149,11 @@ class PomodoroSessionsRepository {
     });
   }
 
-  async getTodaysDurationTask(userId: number, taskId: number, offsetMinutes: number) {
+  async getTodaysDurationTask(
+    userId: number,
+    taskId: number,
+    offsetMinutes: number,
+  ) {
     const { startOfDay, endOfDay } = this.getDateRangeWithOffset(offsetMinutes);
 
     return await prisma.pomodoroSession.aggregate({
@@ -184,10 +196,14 @@ class PomodoroSessionsRepository {
     });
   }
 
-  async countSessionsInRange(userId: number, offsetMinutes: number) {
+  async countSessionsInRange(
+    userId: number,
+    offsetMinutes: number,
+    tx: PrismaTx | typeof prisma = prisma,
+  ) {
     const { startOfDay, endOfDay } = this.getDateRangeWithOffset(offsetMinutes);
 
-    return await prisma.pomodoroSession.count({
+    return await tx.pomodoroSession.count({
       where: {
         userId,
         startedAt: {
@@ -237,9 +253,10 @@ class PomodoroSessionsRepository {
     sessionCount: number = 0,
     startedAt?: Date,
     timezoneOffset?: number,
+    tx: PrismaTx | typeof prisma = prisma,
   ) {
     const endedAt = new Date(startedAt!.getTime() + duration * 60 * 1000);
-    return await prisma.pomodoroSession.create({
+    return await tx.pomodoroSession.create({
       data: {
         userId,
         duration,

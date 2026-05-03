@@ -61,21 +61,8 @@ class TafreeghRepository {
   }
 
   async createTafreegh(userId: number, content: string) {
-    const existingItems = await prisma.tafreegh.findMany({
-      where: { userId },
-      select: { id: true },
-      orderBy: { id: "asc" },
-    });
-
-    let nextId = 1;
-    for (const item of existingItems) {
-      if (item.id === nextId) nextId++;
-      else break;
-    }
-
     return await prisma.tafreegh.create({
       data: {
-        id: nextId,
         content,
         userId,
       },

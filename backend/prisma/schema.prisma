@@ -21,7 +21,7 @@ model User {
   isVerified     Boolean  @default(false) @map("is_verified")
   isActive       Boolean  @default(true) @map("is_active")
   createdAt      DateTime @default(now()) @map("created_at")
-  role           UserRole     @default(USER)
+  role           UserRole @default(USER)
   oauth          Boolean  @default(false) @map("oauth")
 
   // Relations
@@ -107,6 +107,7 @@ model Tag {
   user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks TaskTag[]
 
+  @@unique([userId, name])
   @@index([userId])
   @@map("tags")
 }
@@ -168,6 +169,7 @@ model PomodoroSession {
   task         Task?         @relation(fields: [taskId], references: [id])
   pomodoroTask PomodoroTask? @relation(fields: [pomodoroTaskId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, startedAt])
   @@index([userId, isCompleted])
   @@index([userId, isCompleted, startedAt])
   @@index([userId, taskId, isCompleted, startedAt])

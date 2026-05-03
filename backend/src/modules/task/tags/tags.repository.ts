@@ -115,41 +115,38 @@ class TagRepository {
   }
 
   async addTagToTask(tagId: number, taskId: number, userId: number) {
-    const tag = await prisma.tag.findUnique({
-      where: { id: tagId, userId },
-      select: { id: true },
-    });
-
-    const task = await prisma.task.findUnique({
-      where: { id: taskId, userId },
-      select: { id: true },
-    });
+    // 1. Check ownership in parallel to reduce latency
+    const [tag, task] = await Promise.all([
+      prisma.tag.findUnique({
+        where: { id: tagId, userId },
+        select: { id: true },
+      }),
+      prisma.task.findUnique({
+        where: { id: taskId, userId },
+        select: { id: true },
+      }),
+    ]);
 
     if (!tag || !task) {
       throw new Error("Tag or task not found or doesn't belong to user");
     }
 
-    const existing = await prisma.taskTag.findUnique({
-      where: {
-        taskId_tagId: {
+    // 2. Directly attempt the write, relying on the database's unique constraint
+    try {
+      return await prisma.taskTag.create({
+        data: {
           taskId,
           tagId,
         },
-      },
-      select: { taskId: true },
-    });
-
-    if (existing) {
-      throw new Error("Tag already added to this task");
+        select: TagRepository.TASK_TAG_SELECT,
+      });
+    } catch (error: any) {
+      // P2002 is Prisma's error code for "Unique constraint failed"
+      if (error.code === "P2002") {
+        throw new Error("Tag already added to this task");
+      }
+      throw error;
     }
-
-    return await prisma.taskTag.create({
-      data: {
-        taskId,
-        tagId,
-      },
-      select: TagRepository.TASK_TAG_SELECT,
-    });
   }
 
   async removeTagFromTask(tagId: number, taskId: number, userId: number) {

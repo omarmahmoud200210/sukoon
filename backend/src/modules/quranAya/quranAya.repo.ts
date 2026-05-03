@@ -5,7 +5,6 @@ class QuranAyaRepository {
   constructor() {}
 
   async getTodayQuranAya() {
-    // timezone
     const today = new Date();
     const startOfDay = new Date(
       today.getFullYear(),

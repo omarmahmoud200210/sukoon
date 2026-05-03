@@ -44,10 +44,10 @@ class AuthRepository {
     });
   }
 
-  async verifyEmail(userId: number) {
+  async verifyEmail(userId: number,status:boolean=false) {
     return await prisma.user.update({
       where: { id: userId },
-      data: { isVerified: true },
+      data: { isVerified: status },
     });
   }
 

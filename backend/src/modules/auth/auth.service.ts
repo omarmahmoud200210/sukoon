@@ -13,7 +13,6 @@ import AuthRepository from "./auth.repositorty.js";
 import { AuthErrorCode } from "../../shared/constants/enums.js";
 import uploadImage from "../../shared/utils/upload.utils.js";
 import logger from "../../shared/utils/logger.js";
-
 class AuthenticationServices {
   constructor(private readonly authRepository: AuthRepository) {}
 
@@ -70,10 +69,21 @@ class AuthenticationServices {
     },
   ) => {
     const { password, ...userData } = data;
-    const user = await this.authRepository.getUser(undefined, userData.email);
-    if (user) throw AppError.Unauthorized(AuthErrorCode.USER_ALREADY_EXISTS);
     const password_hash = await argon2.hash(password);
-    const newUser = await this.authRepository.register(userData, password_hash);
+    let newUser: User;
+
+    try {
+      const user = await this.authRepository.getUser(undefined, userData.email);
+      if (user) throw AppError.Unauthorized(AuthErrorCode.USER_ALREADY_EXISTS);
+
+      newUser = await this.authRepository.register(userData, password_hash);
+      await this.authRepository.verifyEmail(newUser.id, false);
+    } catch (error) {
+      logger.error(error);
+      throw AppError.InternalServerError(
+        "Failed to register user. Please check your email configuration and try again.",
+      );
+    }
 
     const verifyEmailToken = generateVerificationToken(newUser.id);
 
@@ -81,7 +91,6 @@ class AuthenticationServices {
       await sendEmail(userData.email, verifyEmailToken);
     } catch (error) {
       logger.error(error);
-      await this.authRepository.deleteAccount(newUser.id);
       throw AppError.InternalServerError(
         "Failed to send verification email. Please check your email configuration and try again.",
       );
@@ -127,7 +136,7 @@ class AuthenticationServices {
     const user = await this.authRepository.getUser(Number(payload.id));
     if (!user) throw AppError.Unauthorized(AuthErrorCode.USER_NOT_FOUND);
 
-    await this.authRepository.verifyEmail(Number(payload.id));
+    await this.authRepository.verifyEmail(Number(payload.id), true);
     return { message: "User verified successfully" };
   };
 

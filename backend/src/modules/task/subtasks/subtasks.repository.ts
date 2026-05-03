@@ -1,5 +1,8 @@
 import prisma from "../../../shared/database/prisma.js";
 import type { SubTasksType } from "../../../types/api.types.js";
+import { Prisma } from "@prisma/client";
+
+type PrismaTx = Prisma.TransactionClient;
 
 class SubTaskRepository {
   private static readonly SUBTASK_SELECT = {
@@ -28,13 +31,22 @@ class SubTaskRepository {
     });
   }
 
-  async updateSubTask(id: number, taskId: number, data: SubTasksType) {
-    return await prisma.subTask.update({
+  async updateSubTask(
+    id: number,
+    taskId: number,
+    data: SubTasksType,
+    tx: PrismaTx | typeof prisma = prisma,
+  ) {
+    const validData: Prisma.SubTaskUpdateInput = {};
+    if (data.title !== undefined) validData.title = data.title;
+    if (data.isCompleted !== undefined) validData.isCompleted = data.isCompleted;
+
+    return await tx.subTask.update({
       where: {
         id: id,
         taskId,
       },
-      data: data,
+      data: validData,
       select: SubTaskRepository.SUBTASK_SELECT,
     });
   }
@@ -49,14 +61,17 @@ class SubTaskRepository {
     });
   }
 
-  async areAllSubtasksCompleted(taskId: number): Promise<boolean> {
-    const subTasks = await prisma.subTask.findMany({
+  async areAllSubtasksCompleted(
+    taskId: number,
+    tx: PrismaTx | typeof prisma = prisma,
+  ): Promise<boolean> {
+    const subTasks = await tx.subTask.findMany({
       where: { taskId },
       select: { isCompleted: true },
     });
-    
+
     if (subTasks.length === 0) return false;
-    return subTasks.every(st => st.isCompleted);
+    return subTasks.every((st) => st.isCompleted);
   }
 }
 

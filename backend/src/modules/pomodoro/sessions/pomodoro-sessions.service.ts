@@ -1,7 +1,10 @@
 import PomodoroSessionsRepository from "./pomodoro-sessions.repository.js";
-import type { PomodoroSession } from "@prisma/client";
+import type { PomodoroSession, Prisma } from "@prisma/client";
 import logger from "../../../shared/utils/logger.js";
 import { AppError } from "../../../shared/middleware/error.js";
+import prisma from "../../../shared/database/prisma.js";
+
+type PrismaTx = Prisma.TransactionClient;
 
 class PomodoroSessionsService {
   constructor(private pomodoroSessionsRepository: PomodoroSessionsRepository) {}
@@ -14,34 +17,39 @@ class PomodoroSessionsService {
     sessionCount?: number,
     timezoneOffset?: number,
   ) {
-    const activeSession =
-      await this.pomodoroSessionsRepository.getActiveSession(userId);
+    return await prisma.$transaction(async (tx) => {
+      const activeSession =
+        await this.pomodoroSessionsRepository.getActiveSession(userId, tx);
 
-    if (activeSession) {
-      throw AppError.BadRequest("You already have an active session");
-    }
+      if (activeSession) {
+        throw AppError.BadRequest("You already have an active session");
+      }
 
-    const finalSessionCount =
-      sessionCount ?? (await this.getTodaysSessionCount(userId));
+      const finalSessionCount =
+        sessionCount ?? (await this.getTodaysSessionCount(userId, tx));
 
-    return this.pomodoroSessionsRepository.createSession(
-      userId,
-      duration,
-      taskId,
-      pomodoroTaskId,
-      finalSessionCount,
-      timezoneOffset,
-    );
+      return this.pomodoroSessionsRepository.createSession(
+        userId,
+        duration,
+        taskId,
+        pomodoroTaskId,
+        finalSessionCount,
+        timezoneOffset,
+        tx
+      );
+    });
   }
 
   private async getTodaysSessionCount(
     userId: number,
+    tx: PrismaTx | typeof prisma = prisma,
     timezoneOffset?: number,
   ): Promise<number> {
     const offset = timezoneOffset ?? new Date().getTimezoneOffset();
     const count = await this.pomodoroSessionsRepository.countSessionsInRange(
       userId,
       offset,
+      tx,
     );
     return count;
   }
@@ -172,7 +180,10 @@ class PomodoroSessionsService {
   }
 
   async deleteSession(userId: number, sessionId: number) {
-    return await this.pomodoroSessionsRepository.deleteSession(sessionId, userId);
+    return await this.pomodoroSessionsRepository.deleteSession(
+      sessionId,
+      userId,
+    );
   }
 
   private getDayBoundariesForDate(referenceDate: Date, offsetMinutes: number) {
@@ -214,7 +225,9 @@ class PomodoroSessionsService {
             sessionId: session.id,
             error: err instanceof Error ? err.message : "Unknown error",
           });
-          logger.error(`[CRON] Failed to split session ${session.id}`, { error: err });
+          logger.error(`[CRON] Failed to split session ${session.id}`, {
+            error: err,
+          });
         }
       }
     }
@@ -245,29 +258,35 @@ class PomodoroSessionsService {
 
     if (previousDuration <= 0 || nextDuration <= 0) return;
 
-    await this.pomodoroSessionsRepository.updateSession(
-      session.id,
-      session.userId,
-      {
-        endedAt: endOfPreviousDay,
-        duration: previousDuration,
-        isCompleted: true,
-      },
-    );
+    await prisma.$transaction(async (tx) => {
+      await this.pomodoroSessionsRepository.updateSession(
+        session.id,
+        session.userId,
+        {
+          endedAt: endOfPreviousDay,
+          duration: previousDuration,
+          isCompleted: true,
+        },
+        tx,
+      );
 
-    await this.pomodoroSessionsRepository.createSessionForNextDay(
-      session.userId,
-      nextDuration,
-      session.taskId ?? undefined,
-      session.pomodoroTaskId ?? undefined,
-      1,
-      startOfNextDay,
-      session.timezoneOffset,
-    );
+      await this.pomodoroSessionsRepository.createSessionForNextDay(
+        session.userId,
+        nextDuration,
+        session.taskId ?? undefined,
+        session.pomodoroTaskId ?? undefined,
+        1,
+        startOfNextDay,
+        session.timezoneOffset,
+        tx,
+      );
+    });
   }
 
   async getHistoryGrouped(userId: number) {
-    return await this.pomodoroSessionsRepository.getSessionsGroupedByTask(userId);
+    return await this.pomodoroSessionsRepository.getSessionsGroupedByTask(
+      userId,
+    );
   }
 }
 

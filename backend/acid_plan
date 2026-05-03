@@ -1,0 +1,459 @@
+# ACID Analysis — What Sukoon Is Missing
+
+> **Purpose:** This document maps every place in the Sukoon backend where ACID principles are violated or absent, organized by concept. Each section teaches the concept first, then shows you the real violation in **your** code.
+
+---
+
+## What is ACID?
+
+Think of ACID as a **contract between your application and the database**. It guarantees that when your code modifies data, the result is **predictable, correct, and safe** — even when things crash or two users act at the same time.
+
+| Letter | Meaning | One-line analogy |
+|--------|---------|------------------|
+| **A** | Atomicity | "All or nothing" — like a bank transfer: both accounts update, or neither does. |
+| **C** | Consistency | "Rules are never broken" — the database never holds invalid data. |
+| **I** | Isolation | "No peeking" — concurrent operations don't see each other's half-finished work. |
+| **D** | Durability | "Written in stone" — once committed, data survives crashes. |
+
+---
+
+## Key Finding
+
+```
+Zero usages of prisma.$transaction() found across the entire codebase.
+```
+
+This is the root cause of nearly every ACID gap below. Prisma supports transactions, but Sukoon never uses them.
+
+---
+
+# A — Atomicity
+
+> **The Concept:** When an operation involves multiple database writes, they must ALL succeed or ALL fail. There is no "half-done" state. Imagine transferring money: you debit Account A *and* credit Account B. If the credit fails but the debit already happened, money vanishes. A transaction wraps both into a single atomic unit.
+
+## Violation A1: SubTask Auto-Complete → Parent Task Update
+
+**File:** [subtasks.service.ts](file:///d:/Projects/sukoon/backend/src/modules/task/subtasks/subtasks.service.ts#L19-L29)
+
+```typescript
+// Step 1: Update the subtask  ← DB write #1
+const updated = await this.subTaskRepository.updateSubTask(id, taskId, subTaskData);
+
+// Step 2: Check if all subtasks are now completed  ← DB read
+if (subTaskData.isCompleted && userId) {
+    const allCompleted = await this.subTaskRepository.areAllSubtasksCompleted(taskId);
+    if (allCompleted) {
+        // Step 3: Mark the parent task as completed  ← DB write #2
+        await this.taskRepository.updateTask(String(taskId), { isCompleted: true }, userId);
+    }
+}
+```
+
+### 🔴 The Disaster Scenario
+1. Step 1 succeeds — the subtask is marked `isCompleted: true`.
+2. Step 3 **crashes** (network timeout, server OOM, database connection drops).
+3. **Result:** The subtask shows completed, all subtasks are done, but the parent task remains `isCompleted: false`. The UI says "all subtasks done" but the task itself is still pending. The user is confused, and no retry will fix this because the check `subTaskData.isCompleted` was already true.
+
+### ✅ The Fix (using `prisma.$transaction`)
+Wrap all three operations in a transaction. If Step 3 fails, Step 1 is **automatically rolled back** — the subtask goes back to incomplete.
+
+---
+
+## Violation A2: Session Splitting (Cross-Day Sessions)
+
+**File:** [pomodoro-sessions.service.ts](file:///d:/Projects/sukoon/backend/src/modules/pomodoro/sessions/pomodoro-sessions.service.ts#L230-L266)
+
+```typescript
+// Step 1: Update the existing session (shorten its endedAt)  ← DB write #1
+await this.pomodoroSessionsRepository.updateSession(
+    session.id, session.userId,
+    { endedAt: endOfPreviousDay, duration: previousDuration, isCompleted: true }
+);
+
+// Step 2: Create a new session for the next day  ← DB write #2
+await this.pomodoroSessionsRepository.createSessionForNextDay(
+    session.userId, nextDuration, ...
+);
+```
+
+### 🔴 The Disaster Scenario
+1. Step 1 succeeds — the original session is now truncated to end at midnight.
+2. Step 2 **fails** — the "next day" session is never created.
+3. **Result:** The user's focus time for the next day **vanishes**. They worked 30 minutes past midnight, but the system shows 0 minutes for that day. Data is permanently lost.
+
+### Why this is especially dangerous
+This runs inside a CRON job (`splitCrossDaySession`) that loops over **all** users' sessions. If one split fails mid-way, some sessions are correct, others are corrupted, and there's no way to know which.
+
+---
+
+## Violation A3: User Registration with Email Verification
+
+**File:** [auth.service.ts](file:///d:/Projects/sukoon/backend/src/modules/auth/auth.service.ts#L67-L93)
+
+```typescript
+// Step 1: Create the user in the database  ← DB write #1
+const newUser = await this.authRepository.register(userData, password_hash);
+
+// Step 2: Send verification email  ← External service call
+try {
+    await sendEmail(userData.email, verifyEmailToken);
+} catch (error) {
+    // Step 3: Manual rollback — delete the user  ← DB write #2
+    await this.authRepository.deleteAccount(newUser.id);
+    throw AppError.InternalServerError("Failed to send verification email...");
+}
+```
+
+### 🔴 The Disaster Scenario
+1. Step 1 succeeds — user is created.
+2. Step 2 fails — email service is down.
+3. Step 3 also fails — database connection drops during the `deleteAccount` call.
+4. **Result:** A ghost user exists in the database. They can't verify (no email was sent), can't re-register (email is unique), and the system doesn't know they're invalid.
+
+### 💡 The Lesson
+This code is **already trying to simulate atomicity manually** with the try/catch + delete. But manual rollback is fragile — the rollback itself can fail. A database transaction would handle this automatically.
+
+> [!IMPORTANT]
+> However, transactions can't undo **external side-effects** (like sending an email). The correct pattern is: create user inside a transaction, send email **after** commit, and if the email fails, mark the user for retry — don't delete them.
+
+---
+
+## Violation A4: Task Update with Tags Replacement
+
+**File:** [tasks.repository.ts](file:///d:/Projects/sukoon/backend/src/modules/task/tasks/tasks.repository.ts#L282-L308)
+
+```typescript
+const task = await prisma.task.update({
+    where: { id: Number(id), userId },
+    data: {
+        ...rest,
+        ...tagsUpdate,   // This contains: deleteMany: {} then create: [...]
+    },
+    select: TaskRepository.TASK_SELECT,
+});
+```
+
+### ✅ Already Atomic (Prisma's Implicit Transaction)
+Good news: Prisma wraps a single `.update()` call (including nested writes like `deleteMany` + `create`) in an **implicit transaction**. So this specific operation is already atomic. 
+
+**But be aware:** If you ever split this into separate calls (e.g., "first delete tags, then update task, then re-create tags"), you'd lose atomicity.
+
+---
+
+# C — Consistency
+
+> **The Concept:** The database must always move from one **valid state** to another **valid state**. "Valid" means all your business rules are enforced. If a rule says "a task's priority must be LOW, MEDIUM, or HIGH," the database should **reject** any other value — not your app code alone.
+
+## Violation C1: Tag Uniqueness — Check-Then-Act Without Protection
+
+**File:** [tags.service.ts](file:///d:/Projects/sukoon/backend/src/modules/task/tags/tags.service.ts#L14-L21)
+
+```typescript
+async createTag(userId: number, name: string) {
+    // Step 1: Check if a tag with this name exists  ← DB read
+    const exists = await this.tagRepository.tagExistsForUser(userId, name);
+    if (exists) throw new Error("A tag with this name already exists");
+
+    // Step 2: Create the tag  ← DB write
+    return await this.tagRepository.createTag(userId, name);
+}
+```
+
+### 🔴 The Disaster Scenario (Race Condition)
+1. User sends two "Create tag: Work" requests simultaneously (double-click, network retry).
+2. Request A reaches Step 1 → No tag exists → continues.
+3. Request B reaches Step 1 → No tag exists → continues (Request A hasn't written yet!).
+4. Both requests reach Step 2 → **Two "Work" tags created** for the same user.
+
+### Why is this a consistency violation?
+Your **business rule** is: "Each user can have only one tag with a given name." But this rule is only enforced in **application code** (the `if (exists)` check), not at the **database level**. The database happily stores the duplicate.
+
+### ✅ The Fix
+Add a **unique composite constraint** in the Prisma schema:
+
+```prisma
+model Tag {
+  // ... existing fields ...
+  @@unique([userId, name])  // ← Database-level enforcement
+}
+```
+
+This way, even if both requests pass the application check, the database itself will reject the duplicate with a unique constraint violation. Your code can then catch `P2002` errors.
+
+---
+
+## Violation C2: No Database-Level Constraints for Business Rules
+
+**Files:** [schema.prisma](file:///d:/Projects/sukoon/backend/prisma/schema.prisma)
+
+Several business rules exist only in service-layer code but have **no database-level enforcement**:
+
+| Business Rule | Where it's enforced | What's missing |
+|---|---|---|
+| "A user can only have one active Pomodoro session" | [pomodoro-sessions.service.ts:17-22](file:///d:/Projects/sukoon/backend/src/modules/pomodoro/sessions/pomodoro-sessions.service.ts#L17-L22) — `if (activeSession) throw` | No unique partial index on `(userId) WHERE isCompleted = false` |
+| "Tag name is unique per user" | [tags.service.ts:15-18](file:///d:/Projects/sukoon/backend/src/modules/task/tags/tags.service.ts#L15-L18) — `if (exists) throw` | No `@@unique([userId, name])` on Tag model |
+| "Pomodoro duration must be positive" | Nowhere | No `CHECK (duration > 0)` constraint |
+| "A task can only be in trash once (deletedAt not null)" | Implicit | No validation that prevents soft-deleting an already-soft-deleted task |
+
+### 💡 The Lesson — Defense in Depth
+Think of consistency like airport security: you don't rely on just one checkpoint. You have:
+1. **Application layer** (Zod validation, service checks) — the first gate.
+2. **Database layer** (constraints, unique indexes, CHECK constraints) — the last gate.
+
+Right now, Sukoon has the first gate only. If anyone bypasses the service layer (a bug, a direct SQL query, a migration script), invalid data goes straight into the database.
+
+---
+
+## Violation C3: Tafreegh ID Gap-Filling Logic
+
+**File:** [tafreegh.repository.ts](file:///d:/Projects/sukoon/backend/src/modules/tafreegh/tafreegh.repository.ts#L63-L83)
+
+```typescript
+async createTafreegh(userId: number, content: string) {
+    // Step 1: Fetch all existing IDs  ← DB read
+    const existingItems = await prisma.tafreegh.findMany({
+        where: { userId },
+        select: { id: true },
+        orderBy: { id: "asc" },
+    });
+
+    // Step 2: Calculate "next available ID" by finding gaps
+    let nextId = 1;
+    for (const item of existingItems) {
+        if (item.id === nextId) nextId++;
+        else break;
+    }
+
+    // Step 3: Create with that ID  ← DB write
+    return await prisma.tafreegh.create({
+        data: { id: nextId, content, userId },
+    });
+}
+```
+
+### 🔴 The Disaster Scenario
+This is a **textbook check-then-act race condition**, and it also violates consistency:
+
+1. Two Tafreegh creation requests arrive simultaneously.
+2. Both read the same existing IDs → both calculate `nextId = 3`.
+3. First request creates Tafreegh with `id: 3` → succeeds.
+4. Second request tries to create Tafreegh with `id: 3` → **primary key violation crash!**
+
+### 💡 Why this approach is fundamentally wrong
+You're fighting **against** the database's auto-increment feature. PostgreSQL's `autoincrement()` is designed to handle exactly this problem — it generates unique sequential IDs **atomically**, using database-level sequences that are immune to race conditions.
+
+The `id` field already has `@default(autoincrement())` in the schema, so the gap-filling logic is unnecessary and harmful.
+
+---
+
+## Violation C4: Missing Validation at the Data Bridge Level
+
+**File:** [subtasks.repository.ts](file:///d:/Projects/sukoon/backend/src/modules/task/subtasks/subtasks.repository.ts#L31-L39)
+
+```typescript
+async updateSubTask(id: number, taskId: number, data: SubTasksType) {
+    return await prisma.subTask.update({
+        where: { id: id, taskId },
+        data: data,   // ← Raw data passed directly to Prisma
+    });
+}
+```
+
+The repository accepts `SubTasksType` and passes it directly to Prisma. If `SubTasksType` includes unexpected fields (due to a bug or API change), Prisma might silently ignore them or worse, cause runtime errors. The repository layer — your "Data Bridge" — should validate or filter data before it reaches the database.
+
+---
+
+# I — Isolation
+
+> **The Concept:** When two operations run at the same time, each one should behave as if it's the **only** one running. Without isolation, you get "race conditions" — where the result depends on **timing** rather than logic.
+
+## Violation I1: "Start Session" Double-Request
+
+**File:** [pomodoro-sessions.service.ts](file:///d:/Projects/sukoon/backend/src/modules/pomodoro/sessions/pomodoro-sessions.service.ts#L9-L35)
+
+```typescript
+async startSession(userId: number, duration: number, ...) {
+    // Step 1: Check for an existing active session  ← DB read
+    const activeSession = await this.pomodoroSessionsRepository.getActiveSession(userId);
+    if (activeSession) throw AppError.BadRequest("You already have an active session");
+
+    // Step 2: Create a new session  ← DB write
+    return this.pomodoroSessionsRepository.createSession(userId, duration, ...);
+}
+```
+
+### 🔴 The Disaster Scenario (Identical to Tag duplication)
+1. User clicks "Start Session" twice rapidly.
+2. Both requests reach Step 1 → no active session → both continue.
+3. Both reach Step 2 → **two active sessions created**.
+4. Now `getActiveSession` (which uses `findFirst`) returns whichever one it finds — the other is orphaned and will never be completed.
+
+### ✅ The Fix (Two layers)
+1. **Database:** Create a unique partial index:
+   ```sql
+   CREATE UNIQUE INDEX one_active_session_per_user 
+   ON pomodoro_sessions (user_id) 
+   WHERE is_completed = false;
+   ```
+2. **Application:** Wrap the check + create in a `prisma.$transaction` with serializable isolation level.
+
+---
+
+## Violation I2: `addTagToTask` — Three Reads Before One Write
+
+**File:** [tags.repository.ts](file:///d:/Projects/sukoon/backend/src/modules/task/tags/tags.repository.ts#L117-L153)
+
+```typescript
+async addTagToTask(tagId: number, taskId: number, userId: number) {
+    // Read 1: Check tag exists and belongs to user
+    const tag = await prisma.tag.findUnique({ where: { id: tagId, userId } });
+    // Read 2: Check task exists and belongs to user
+    const task = await prisma.task.findUnique({ where: { id: taskId, userId } });
+    if (!tag || !task) throw new Error("...");
+
+    // Read 3: Check if tag is already on this task
+    const existing = await prisma.taskTag.findUnique({
+        where: { taskId_tagId: { taskId, tagId } },
+    });
+    if (existing) throw new Error("Tag already added to this task");
+
+    // Write: Actually add the tag
+    return await prisma.taskTag.create({ data: { taskId, tagId } });
+}
+```
+
+### 🔴 The Problem
+Between Read 3 (checking if tag-task link exists) and the Write (creating it), another request can insert the same link. The composite primary key `@@id([taskId, tagId])` on `TaskTag` will catch this with a **P2002 unique constraint error** — but the code doesn't handle it gracefully. The user gets a raw Prisma error instead of a clean message.
+
+### 💡 The Isolation Lesson
+The more **reads** you do before a **write**, the wider the "window of vulnerability" for race conditions. Each read creates an assumption about the world ("this tag exists," "this link doesn't exist yet"), and by the time the write happens, those assumptions might be stale.
+
+---
+
+## Violation I3: CRON Job Processes All Users Sequentially Without Locks
+
+**File:** [cron.controller.ts](file:///d:/Projects/sukoon/backend/src/modules/cron/cron.controller.ts#L51-L66)
+
+```typescript
+const runPersonalizedQuranAya = async () => {
+    const users = await authRepo.getAllUsers();  // ← Fetches ALL user IDs
+    for (const user of users) {
+        await personalizedAyaService.personalizedAyaWithAI(user.id);
+    }
+};
+```
+
+If this CRON endpoint is triggered twice (e.g., Railway sends a retry, or a health check re-fires it), both executions will:
+1. Fetch the same list of users.
+2. Process the same users in parallel.
+3. Potentially create **duplicate personalized Ayas** for each user.
+
+There's no **idempotency guard** — no check like "has this user already received their personalized Aya today before I generate a new one?"
+
+---
+
+# D — Durability
+
+> **The Concept:** Once the database says "committed," the data must survive **any failure** — power outage, crash, disk failure. This is mostly handled by PostgreSQL itself (via WAL — Write-Ahead Logging). But your application can undermine durability.
+
+## Violation D1: Fire-and-Forget CRON Jobs
+
+**File:** [cron.controller.ts](file:///d:/Projects/sukoon/backend/src/modules/cron/cron.controller.ts#L11-L24)
+
+```typescript
+export const triggerMidnightJobs = async (_req: Request, res: Response) => {
+    // We do not await these intentionally
+    runSplittingSessions();      // ← No await!
+    runQuranAya();               // ← No await!
+    runPersonalizedQuranAya();   // ← No await!
+
+    res.status(202).json({ message: "Midnight jobs triggered successfully" });
+};
+```
+
+### 🔴 The Durability Problem
+The HTTP response says `"Midnight jobs triggered successfully"` — but the jobs haven't even started yet! They're running in the background. If the server restarts (deployment, crash, Railway container rotation) while these are running:
+- Session splits are partially done (Atomicity + Durability violation).
+- The Quran Aya for today is never created.
+- Users never get their personalized Aya.
+
+And there's **no retry mechanism**. The caller (Railway CRON) received `202 OK`, so it thinks everything is fine.
+
+### 💡 The Fix
+This is fundamentally a **job queue** problem. Options:
+1. **Await the jobs** and let the CRON service handle retries on timeout.
+2. Use a **persistent job queue** (BullMQ + Redis) that survives restarts.
+3. At minimum, add an **idempotency check**: "Was this job already completed today?"
+
+---
+
+## Violation D2: No Connection Recovery Strategy
+
+**File:** [prisma.ts](file:///d:/Projects/sukoon/backend/src/shared/database/prisma.ts)
+
+```typescript
+const pool = new pg.Pool({
+    connectionString,
+    max: parseInt(process.env.DB_POOL_SIZE || "10"),
+    idleTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
+    maxLifetimeSeconds: 30,
+});
+```
+
+The pool configuration is good, but there's **no error event handler** on the pool. If PostgreSQL goes down temporarily and comes back up, the pool may not recover gracefully. Adding `pool.on('error', ...)` ensures your app knows about connection failures instead of hanging indefinitely.
+
+---
+
+# Summary: All Violations by Priority
+
+| Priority | ID | ACID | Where | What's Wrong |
+|---|---|---|---|---|
+| 🔴 Critical | A1 | Atomicity | `subtasks.service.ts` | Subtask complete + parent auto-complete not transactional |
+| 🔴 Critical | A2 | Atomicity | `pomodoro-sessions.service.ts` | Session split: update + create not transactional |
+| 🔴 Critical | C3 | Consistency | `tafreegh.repository.ts` | Manual ID gap-filling races and can crash on PK conflict |
+| 🔴 Critical | I1 | Isolation | `pomodoro-sessions.service.ts` | Double start-session creates duplicate active sessions |
+| 🟠 High | C1 | Consistency | `tags.service.ts` | Tag uniqueness only in app code, not DB |
+| 🟠 High | I2 | Isolation | `tags.repository.ts` | `addTagToTask` check-then-act with no race protection |
+| 🟠 High | D1 | Durability | `cron.controller.ts` | Fire-and-forget background jobs with no retry/idempotency |
+| 🟡 Medium | A3 | Atomicity | `auth.service.ts` | Manual rollback on registration failure is fragile |
+| 🟡 Medium | C2 | Consistency | `schema.prisma` | Business rules not enforced at DB level |
+| 🟡 Medium | C4 | Consistency | `subtasks.repository.ts` | Raw data passthrough without filtering |
+| 🟡 Medium | I3 | Isolation | `cron.controller.ts` | CRON re-trigger creates duplicate personalized Ayas |
+| 🟢 Low | D2 | Durability | `prisma.ts` | No pool error handler for connection recovery |
+
+---
+
+# Implementation Order
+
+### Phase 1: Add Transactions (Atomicity)
+1. Create a shared `prisma.$transaction()` wrapper utility.
+2. Fix A1: Wrap subtask update + parent task update in a transaction.
+3. Fix A2: Wrap session split (update + create) in a transaction.
+4. Fix A3: Restructure registration to use transaction + post-commit email.
+
+### Phase 2: Add Database Constraints (Consistency)  
+5. Fix C1: Add `@@unique([userId, name])` to `Tag` model.
+6. Fix C3: Remove manual ID gap-filling from Tafreegh, use `autoincrement()`.
+7. Fix C2: Add Prisma-level or migration-level constraints for business rules.
+8. Fix C4: Filter repository inputs to only known fields.
+
+### Phase 3: Add Isolation Guards
+9. Fix I1: Add unique partial index for active sessions + transaction.
+10. Fix I2: Handle `P2002` errors gracefully in `addTagToTask`.
+11. Fix I3: Add idempotency checks to CRON job functions.
+
+### Phase 4: Strengthen Durability
+12. Fix D1: Either await CRON jobs or implement a proper job queue.
+13. Fix D2: Add `pool.on('error', ...)` handler.
+
+---
+
+> [!NOTE]
+> PostgreSQL itself handles Durability very well through WAL (Write-Ahead Logging). Most durability issues in Sukoon are **application-level** — where the app undermines the guarantees PostgreSQL already provides by not waiting for results or not using transactions.
+
+## Open Questions
+
+1. **Tafreegh ID gap-filling** — is there a specific business reason you fill ID gaps manually instead of using auto-increment? This affects how we fix C3.
+2. **CRON job reliability** — do you want to add a proper job queue (BullMQ) or is a simpler idempotency-check approach sufficient for now?
+3. **Do you want me to implement these fixes**, or is this analysis primarily for learning purposes?

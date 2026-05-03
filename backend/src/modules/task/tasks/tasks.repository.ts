@@ -5,6 +5,7 @@ import type {
   UpdateTaskRequest,
 } from "../../../types/api.types.js";
 import { Prisma } from "@prisma/client";
+type PrismaTx = Prisma.TransactionClient;
 
 class TaskRepository {
   private static readonly TASK_SELECT = {
@@ -48,15 +49,13 @@ class TaskRepository {
     };
   }
 
-  async getAllCompletedTasks(
-    userId: number
-  ): Promise<Task[]> {
+  async getAllCompletedTasks(userId: number): Promise<Task[]> {
     const tasks = await prisma.task.findMany({
       where: {
         isCompleted: true,
         userId,
         deletedAt: null,
-        listId: null
+        listId: null,
       },
       orderBy: { id: "asc" },
       select: TaskRepository.TASK_SELECT,
@@ -65,15 +64,13 @@ class TaskRepository {
     return tasks.map((task) => this.transformTask(task)) as unknown as Task[];
   }
 
-  async getAllUncompletedTasks(
-    userId: number
-  ) {
+  async getAllUncompletedTasks(userId: number) {
     const tasks = await prisma.task.findMany({
       where: {
         isCompleted: false,
         userId,
         deletedAt: null,
-        listId: null
+        listId: null,
       },
       orderBy: { id: "asc" },
       select: TaskRepository.TASK_SELECT,
@@ -88,7 +85,10 @@ class TaskRepository {
     });
   }
 
-  async getTodaysTasks(userId: number, status?: "pending" | "completed" | "all") {
+  async getTodaysTasks(
+    userId: number,
+    status?: "pending" | "completed" | "all",
+  ) {
     let isCompletedFilter: boolean | undefined = undefined;
     if (status === "pending") isCompletedFilter = false;
     if (status === "completed") isCompletedFilter = true;
@@ -117,8 +117,10 @@ class TaskRepository {
           gte: startOfDay,
           lte: endOfDay,
         },
-        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
-        listId: null
+        ...(isCompletedFilter !== undefined && {
+          isCompleted: isCompletedFilter,
+        }),
+        listId: null,
       },
       orderBy: [{ dueDate: "asc" }, { id: "asc" }],
       select: TaskRepository.TASK_SELECT,
@@ -133,7 +135,10 @@ class TaskRepository {
     });
   }
 
-  async getUpcomingTasks(userId: number, status?: "pending" | "completed" | "all") {
+  async getUpcomingTasks(
+    userId: number,
+    status?: "pending" | "completed" | "all",
+  ) {
     let isCompletedFilter: boolean | undefined = undefined;
     if (status === "pending") isCompletedFilter = false;
     if (status === "completed") isCompletedFilter = true;
@@ -150,7 +155,9 @@ class TaskRepository {
           gte: startOfTomorrow,
         },
         isCompleted: false,
-        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+        ...(isCompletedFilter !== undefined && {
+          isCompleted: isCompletedFilter,
+        }),
         listId: null,
       },
       orderBy: [{ dueDate: "asc" }, { id: "asc" }],
@@ -186,7 +193,11 @@ class TaskRepository {
     });
   }
 
-  async getTasksByList(userId: number, listId: number, status?: "pending" | "completed" | "all") {
+  async getTasksByList(
+    userId: number,
+    listId: number,
+    status?: "pending" | "completed" | "all",
+  ) {
     let isCompletedFilter: boolean | undefined = undefined;
     if (status === "pending") isCompletedFilter = false;
     if (status === "completed") isCompletedFilter = true;
@@ -196,7 +207,9 @@ class TaskRepository {
         userId,
         listId,
         deletedAt: null,
-        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+        ...(isCompletedFilter !== undefined && {
+          isCompleted: isCompletedFilter,
+        }),
       },
       orderBy: { id: "asc" },
       select: TaskRepository.TASK_SELECT,
@@ -211,7 +224,11 @@ class TaskRepository {
     });
   }
 
-  async getTasksByTag(userId: number, tagId: number, status?: "pending" | "completed" | "all") {
+  async getTasksByTag(
+    userId: number,
+    tagId: number,
+    status?: "pending" | "completed" | "all",
+  ) {
     let isCompletedFilter: boolean | undefined = undefined;
     if (status === "pending") isCompletedFilter = false;
     if (status === "completed") isCompletedFilter = true;
@@ -225,7 +242,9 @@ class TaskRepository {
           },
         },
         deletedAt: null,
-        ...(isCompletedFilter !== undefined && { isCompleted: isCompletedFilter }),
+        ...(isCompletedFilter !== undefined && {
+          isCompleted: isCompletedFilter,
+        }),
       },
       orderBy: { id: "asc" },
       select: TaskRepository.TASK_SELECT,
@@ -279,7 +298,12 @@ class TaskRepository {
     return this.transformTask(task);
   }
 
-  async updateTask(id: string, taskData: UpdateTaskRequest, userId: number) {
+  async updateTask(
+    id: string,
+    taskData: UpdateTaskRequest,
+    userId: number,
+    tx: PrismaTx | typeof prisma = prisma,
+  ) {
     const { tagIds, ...rest } = taskData;
 
     const tagsUpdate =
@@ -292,7 +316,7 @@ class TaskRepository {
           }
         : {};
 
-    const task = await prisma.task.update({
+    const task = await tx.task.update({
       where: {
         id: Number(id),
         userId,

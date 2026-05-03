@@ -6,6 +6,7 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initializeCronJobs } from "./shared/jobs/cron/cron.job.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +15,9 @@ const PORT = process.env.PORT || 3000;
 
 try {
   const appInstance = new App();
+
+  // Initialize background jobs
+  initializeCronJobs();
   const certPath = path.join(__dirname, "../server.crt");
   const keyPath = path.join(__dirname, "../server.key");
 
