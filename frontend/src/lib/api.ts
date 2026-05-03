@@ -23,6 +23,8 @@ api.interceptors.response.use(
   async (error) => {
     // 1. Broad Network Error Checks (Offline/Cors)
     if (error.code === "ERR_NETWORK" || !error.response) {
+      console.log(error);
+      
        toast.error(i18next.t("common.offline_message") || "You're offline. Some features may not work until you're back.");
        return Promise.reject(error);
     }

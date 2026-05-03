@@ -7,6 +7,7 @@ import {
   useTogglePausePomodoroSession,
   useCompletePomodoroSession,
   useResetPomodoroSession,
+  useEndAndSavePomodoroSession,
   pomodoroSessionsKeys,
   pomodoroTasksKeys,
 } from "@/hooks/useTimer";
@@ -22,6 +23,7 @@ export default function useTimerControls() {
   const togglePauseSession = useTogglePausePomodoroSession();
   const completeSession = useCompletePomodoroSession();
   const resetSession = useResetPomodoroSession();
+  const endAndSaveSession = useEndAndSavePomodoroSession();
 
   const isActive = useUIStore((s) => s.isActive);
   const setIsActive = useUIStore((s) => s.setIsActive);
@@ -39,7 +41,9 @@ export default function useTimerControls() {
   const queryClient = useQueryClient();
   const manualActiveTask = useUIStore((s) => s.manualActiveTask);
 
-  const setIsTimerFinishedNaturally = useUIStore((s) => s.setIsTimerFinishedNaturally);
+  const setIsTimerFinishedNaturally = useUIStore(
+    (s) => s.setIsTimerFinishedNaturally,
+  );
 
   const onComplete = useCallback(() => {
     timerWorker.postMessage({ type: "stop" });
@@ -80,7 +84,7 @@ export default function useTimerControls() {
       const taskDuration = manualActiveTask?.duration ?? 25;
       setTimeLeft(taskDuration * 60);
     }
-    
+
     setIsTimerFinishedNaturally(true);
   }, [
     mode,
@@ -95,6 +99,43 @@ export default function useTimerControls() {
     setEndTimestamp,
     setIsTimerFinishedNaturally,
   ]);
+
+  const endAndSave = () => {
+    if (mode === "work") {
+      const totalDurationInSeconds = (activeSession?.duration || 25) * 60;
+      const secondsWorked = totalDurationInSeconds - timeLeft;
+      const minutesWorked = Math.max(1, Math.round(secondsWorked / 60));
+
+      const sessionData = {
+        duration: minutesWorked,
+        endedAt: Date.now(),
+        id: activeSession?.id as number,
+      };
+
+      endAndSaveSession.mutate(sessionData);
+
+      queryClient.invalidateQueries({
+        queryKey: pomodoroTasksKeys.taskStatistics(
+          String(activeSession?.taskId),
+        ),
+      });
+      queryClient.invalidateQueries({ queryKey: pomodoroTasksKeys.statistics });
+      queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.history });
+      queryClient.invalidateQueries({
+        queryKey: pomodoroSessionsKeys.activeSession,
+      });
+      queryClient.invalidateQueries({
+        queryKey: pomodoroTasksKeys.taskStatistics(
+          String(activeSession?.pomodoroTaskId),
+        ),
+      });
+
+      setIsActive(false);
+      setEndTimestamp(null);
+      setTimeLeft(0);
+      setMode("work");
+    }
+  };
 
   function triggerSessionCompleteAlert(title: string, body: string) {
     const alertSound = new Audio(sound);
@@ -113,6 +154,19 @@ export default function useTimerControls() {
   }
 
   useLayoutEffect(() => {
+    if (
+      !isActiveSessionLoading &&
+      prevSessionIdRef.current &&
+      !activeSession &&
+      mode === "work"
+    ) {
+      prevSessionIdRef.current = undefined;
+      setIsActive(false);
+      setTimeLeft(0);
+      setEndTimestamp(null);
+      return;
+    }
+
     if (
       activeSession &&
       activeSession.id !== prevSessionIdRef.current &&
@@ -250,5 +304,6 @@ export default function useTimerControls() {
     activeSession,
     isActiveSessionLoading,
     triggerSessionCompleteAlert,
+    endAndSave,
   };
 }

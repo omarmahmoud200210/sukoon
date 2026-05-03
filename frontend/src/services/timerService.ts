@@ -63,6 +63,11 @@ const completeSession = async (): Promise<PomodoroSession> => {
   return data;
 };
 
+const endAndSaveSession = async (payload: { id: number, duration: number, endedAt: number }): Promise<PomodoroSession> => {
+  const { data } = await api.patch(`${API_URL}/session/end-and-save`, payload);
+  return data;
+};
+
 const resetSession = async (): Promise<void> => {
   await api.delete(`${API_URL}/session/reset`);
 };
@@ -108,4 +113,5 @@ export {
   getPomodoroHistory,
   getTaskStatistics,
   deletePomodoroSession,
+  endAndSaveSession,
 };

@@ -18,8 +18,18 @@ export default function Timer({
   onClear,
   timerControls,
 }: TimerProps) {
-  const { start, pause, resume, reset, complete, isActive, timeLeft, mode, sessionCount, activeSession } =
-    timerControls;
+  const {
+    start,
+    pause,
+    resume,
+    reset,
+    endAndSave,
+    isActive,
+    timeLeft,
+    mode,
+    sessionCount,
+    activeSession,
+  } = timerControls;
   const [openDuration, setOpenDuration] = useState(25);
   const { t } = useTranslation();
 
@@ -62,7 +72,9 @@ export default function Timer({
       layout
       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
       className={`flex items-center justify-between px-4 py-3 md:px-8 md:py-4 rounded-2xl transition-colors duration-300 group ${
-        mode === "work" ? "bg-primary text-on-primary" : "bg-tertiary text-on-tertiary"
+        mode === "work"
+          ? "bg-primary text-on-primary"
+          : "bg-tertiary text-on-tertiary"
       }`}
     >
       <div className="flex items-center gap-4 truncate">
@@ -76,7 +88,9 @@ export default function Timer({
                 min="1"
                 max="120"
                 value={openDuration}
-                onChange={(e) => setOpenDuration(Math.max(1, Number(e.target.value) || 25))}
+                onChange={(e) =>
+                  setOpenDuration(Math.max(1, Number(e.target.value) || 25))
+                }
                 className="w-12 bg-on-primary/10 text-center font-bold text-sm rounded-md border-none outline-none focus:ring-2 focus:ring-on-primary/50 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span className="text-sm font-bold">{t("timer.min")}</span>
@@ -89,7 +103,9 @@ export default function Timer({
           )}
         </div>
         <div className="h-4 w-px bg-on-primary/20 shrink-0" />
-        <span className="text-lg md:text-xl font-bold tabular-nums">{displayTime}</span>
+        <span className="text-lg md:text-xl font-bold tabular-nums">
+          {displayTime}
+        </span>
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
@@ -111,7 +127,10 @@ export default function Timer({
                 }
               }}
             >
-              <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span
+                className="material-symbols-outlined text-lg"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
                 play_arrow
               </span>
             </motion.button>
@@ -128,7 +147,10 @@ export default function Timer({
               className="w-9 h-9 rounded-full bg-on-primary text-primary flex items-center justify-center cursor-pointer shrink-0"
               onClick={pause}
             >
-              <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span
+                className="material-symbols-outlined text-lg"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
                 pause
               </span>
             </motion.button>
@@ -148,7 +170,10 @@ export default function Timer({
                 className="w-9 h-9 rounded-full bg-on-primary text-primary flex items-center justify-center cursor-pointer shrink-0"
                 onClick={resume}
               >
-                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span
+                  className="material-symbols-outlined text-lg"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
                   play_arrow
                 </span>
               </motion.button>
@@ -158,7 +183,10 @@ export default function Timer({
                 className="w-9 h-9 rounded-full bg-on-primary/20 text-on-primary flex items-center justify-center cursor-pointer shrink-0"
                 onClick={() => setEndDialogOpen(true)}
               >
-                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span
+                  className="material-symbols-outlined text-lg"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
                   restart_alt
                 </span>
               </motion.button>
@@ -176,7 +204,11 @@ export default function Timer({
               }
             }}
             className="p-1.5 hover:bg-on-primary/10 rounded-full transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer"
-            title={isRunning || isPaused ? t("common.endSession") || "End Session" : t("common.clear")}
+            title={
+              isRunning || isPaused
+                ? t("common.endSession") || "End Session"
+                : t("common.clear")
+            }
           >
             <X className="w-4 h-4" />
           </button>
@@ -186,7 +218,7 @@ export default function Timer({
       <SessionEndDialog
         open={endDialogOpen}
         onOpenChange={setEndDialogOpen}
-        onEndAndSave={complete}
+        onEndAndSave={endAndSave}
         onQuit={reset}
         elapsedSecs={elapsedSecs}
         sessionMode={mode}

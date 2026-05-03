@@ -1,4 +1,3 @@
-
 import type { Task } from "@/types/tasks";
 import { useTaskEditor } from "@/hooks/useTaskEditor";
 import {
@@ -56,8 +55,7 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
 
   const tagLength = 2;
 
-  const priorityClasses = isHighPriority ? "border border-error/50 rounded-xl shadow-sm mb-1" : "border-b border-b-outline-variant/10";
-  const baseClasses = `relative flex items-center gap-4 p-3 transition-all duration-200 cursor-pointer ${priorityClasses}`;
+  const baseClasses = `relative flex items-center gap-4 p-3 transition-all duration-200 cursor-pointer`
 
   const stateClasses = isCompleted
     ? "bg-transparent shadow-none text-on-surface-variant/50"
@@ -72,8 +70,6 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
       tabIndex={0}
       aria-label={t("tasks.task_item", { title: task.title })}
     >
-
-
       <button
         onClick={handleToggleTask}
         className={`cursor-pointer w-5 h-5 rounded-[0.5rem] border-[1.5px] flex items-center justify-center transition-all shrink-0 ${
@@ -95,8 +91,8 @@ function TaskItem({ task, isTrashMode, isOverdue }: TaskItemProps) {
           isCompleted
             ? "text-on-surface-variant/30 line-through"
             : isHighPriority
-            ? "text-error font-bold"
-            : "text-on-surface font-medium"
+            ? "text-error"
+            : "text-on-surface"
         }`}
       >
         {task.title}

@@ -174,6 +174,19 @@ export const useCompletePomodoroSession = () => {
   });
 };
 
+export const useEndAndSavePomodoroSession = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: timerService.endAndSaveSession,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.activeSession });
+      queryClient.invalidateQueries({ queryKey: pomodoroTasksKeys.statistics });
+      queryClient.invalidateQueries({ queryKey: pomodoroSessionsKeys.history });
+    },
+    onError: onCompleteSessionError, // We can reuse this error handler or create a new one, it works either way
+  });
+};
+
 export const useResetPomodoroSession = () => {
   const queryClient = useQueryClient();
   return useMutation({
