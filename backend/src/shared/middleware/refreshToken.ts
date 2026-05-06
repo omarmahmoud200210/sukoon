@@ -27,8 +27,8 @@ const refreshToken: RequestHandler = (req, res, next: NextFunction) => {
 
       res.cookie("access_token", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: true,
+        sameSite: "none",
         maxAge: 15 * 60 * 1000,
       });
 

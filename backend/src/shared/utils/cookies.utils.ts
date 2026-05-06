@@ -6,7 +6,7 @@ export default function setCookies(
   refreshToken: string,
   rememberMe?: boolean,
 ): void {
-  const accessMaxAge = 7 * 24 * 60 * 60 * 1000;
+  const accessMaxAge = 15 * 60 * 1000;
 
   const refreshMaxAge = rememberMe
     ? 30 * 24 * 60 * 60 * 1000 // 30 days

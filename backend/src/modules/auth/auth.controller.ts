@@ -109,7 +109,7 @@ class AuthenticationController {
   };
 
   googleLogin: RequestHandler = async (req, res) => {
-    const { accessToken, refreshToken } = req.user as any;
+    const { accessToken, refreshToken } = req.user!;
 
     if (accessToken && refreshToken) {
       setCookies(res, accessToken, refreshToken);

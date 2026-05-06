@@ -13,6 +13,8 @@ declare global {
       isVerified?: boolean;
       isActive?: boolean;
       createdAt?: Date;
+      accessToken?: string;
+      refreshToken?: string;
     }
   }
 }

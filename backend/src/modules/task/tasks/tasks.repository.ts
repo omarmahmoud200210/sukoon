@@ -5,6 +5,7 @@ import type {
   UpdateTaskRequest,
 } from "../../../types/api.types.js";
 import { Prisma } from "@prisma/client";
+import { AppError } from "../../../shared/middleware/error.js";
 type PrismaTx = Prisma.TransactionClient;
 
 class TaskRepository {
@@ -198,6 +199,9 @@ class TaskRepository {
     listId: number,
     status?: "pending" | "completed" | "all",
   ) {
+    const list = await prisma.list.findUnique({ where: { id: listId, userId } });
+    if (!list) throw AppError.NotFound("List not found or access denied");
+
     let isCompletedFilter: boolean | undefined = undefined;
     if (status === "pending") isCompletedFilter = false;
     if (status === "completed") isCompletedFilter = true;
