@@ -61,6 +61,16 @@ class PomodoroSessionsRepository {
     });
   }
 
+  async getAllRunningSessions() {
+    return await prisma.pomodoroSession.findMany({
+      where: {
+        isCompleted: false,
+        isPaused: false,
+      },
+      select: PomodoroSessionsRepository.SESSION_SELECT,
+    });
+  }
+
   async getUncompletedSessions(startOfDay?: Date, endOfDay?: Date) {
     return await prisma.pomodoroSession.findMany({
       where: {

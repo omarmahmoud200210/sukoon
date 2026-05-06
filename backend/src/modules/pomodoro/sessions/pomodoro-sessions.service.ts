@@ -35,7 +35,7 @@ class PomodoroSessionsService {
         pomodoroTaskId,
         finalSessionCount,
         timezoneOffset,
-        tx
+        tx,
       );
     });
   }
@@ -107,7 +107,12 @@ class PomodoroSessionsService {
     );
   }
 
-  async endAndSaveSession(userId: number, sessionId: number, duration: number, endedAt: Date) {
+  async endAndSaveSession(
+    userId: number,
+    sessionId: number,
+    duration: number,
+    endedAt: Date,
+  ) {
     const activeSession =
       await this.pomodoroSessionsRepository.getActiveSession(userId);
 
@@ -220,13 +225,9 @@ class PomodoroSessionsService {
     return { startOfDay, endOfDay };
   }
 
-  async splitCrossDaySession() {
+  async splitAllCrossDaySessions() {
     const sessions =
-      await this.pomodoroSessionsRepository.getUncompletedSessions();
-
-    let splitCount = 0;
-    let failedCount = 0;
-    const errors: { sessionId: number; error: string }[] = [];
+      await this.pomodoroSessionsRepository.getAllRunningSessions();
 
     for (const session of sessions) {
       const { endOfDay } = this.getDayBoundariesForDate(
@@ -237,26 +238,11 @@ class PomodoroSessionsService {
       if (session.endedAt > endOfDay) {
         try {
           await this.splitSingleSession(session);
-          splitCount++;
         } catch (err) {
-          failedCount++;
-          errors.push({
-            sessionId: session.id,
-            error: err instanceof Error ? err.message : "Unknown error",
-          });
-          logger.error(`[CRON] Failed to split session ${session.id}`, {
-            error: err,
-          });
+          logger.error(err);
         }
       }
     }
-
-    return {
-      message: "Sessions split successfully",
-      splitCount,
-      failedCount,
-      errors,
-    };
   }
 
   async splitSingleSession(session: PomodoroSession) {

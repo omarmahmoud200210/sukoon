@@ -12,8 +12,8 @@ const runSplittingSessions = async () => {
   try {
     const repos = new PomodoroSessionsRepository();
     const services = new PomodoroSessionsService(repos);
-    const result = await services.splitCrossDaySession();
-    logger.info("[CRON] Session split job completed successfully", { result });
+    await services.splitAllCrossDaySessions();
+    logger.info("[CRON] Session split job completed successfully");
   } catch (err) {
     logger.error("[CRON] Session split job failed", { error: err });
   }
